@@ -328,17 +328,18 @@
   <script>
     const WEATHER_REFRESH_MS = 15 * 60 * 1000;
 
-    const CLOCKS = [
-      { label: "Turks & Caicos",     tz: "America/Grand_Turk",     flag:"🇹🇨", accent:"120,190,255", lat:21.6940, lon:-71.7979 },
-      { label: "Miami",             tz: "America/New_York",       flag:"🇺🇸", accent:"255,120,170", lat:25.7617, lon:-80.1918 },
-      { label: "Houston",           tz: "America/Chicago",        flag:"🇺🇸", accent:"140,255,190", lat:29.7604, lon:-95.3698 },
-      { label: "Philippines",       tz: "Asia/Manila",            flag:"🇵🇭", accent:"120,255,230", lat:14.5995, lon:120.9842 },
-      { label: "Dominican Republic",tz: "America/Santo_Domingo",  flag:"🇩🇴", accent:"255,190,120", lat:18.4861, lon:-69.9312 },
-      { label: "London",            tz: "Europe/London",          flag:"🇬🇧", accent:"170,150,255", lat:51.5072, lon:-0.1276 },
-      { label: "Jamaica",           tz: "America/Jamaica",        flag:"🇯🇲", accent:"255,120,120", lat:17.9712, lon:-76.7936 },
-      { label: "Toronto", tz: "America/Toronto", flag:"🇨🇦", accent:"200,60,60", lat:43.6532, lon:-79.3832 },
-	  { label: "Dubai",   tz: "Asia/Dubai",      flag:"🇦🇪", accent:"255,180,80", lat:25.2048, lon:55.2708 },
-    ];
+const CLOCKS = [
+  { label: "Turks & Caicos", tz: "America/Grand_Turk", flag:"🇹🇨", accent:"120,190,255", lat:21.6940, lon:-71.7979 },
+  { label: "Miami", tz: "America/New_York", flag:"🇺🇸", accent:"255,120,170", lat:25.7617, lon:-80.1918 },
+  { label: "Houston", tz: "America/Chicago", flag:"🇺🇸", accent:"140,255,190", lat:29.7604, lon:-95.3698 },
+
+  { label: "Manila", tz: "Asia/Manila", flag:"🇵🇭", accent:"120,255,230", lat:14.5995, lon:120.9842 },
+  { label: "Santiago", tz: "America/Santo_Domingo", flag:"🇩🇴", accent:"255,190,120", lat:19.4517, lon:-70.6970 },
+  { label: "London", tz: "Europe/London", flag:"🇬🇧", accent:"170,150,255", lat:51.5072, lon:-0.1276 },
+
+  { label: "Kingston", tz: "America/Jamaica", flag:"🇯🇲", accent:"255,120,120", lat:17.9712, lon:-76.7936 },
+  { label: "Dubai", tz: "Asia/Dubai", flag:"🇦🇪", accent:"255,180,80", lat:25.2048, lon:55.2708 },
+];
 
     const grid = document.getElementById("grid");
     const localNow = document.getElementById("localNow");
