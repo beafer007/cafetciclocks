@@ -94,7 +94,16 @@
     @media (max-width: 1150px){
       .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
+.top{
+  flex-wrap: wrap;
+}
 
+.top > div:last-child{
+  margin-left:auto;
+  display:flex;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
     .card{
       position:relative;
       border-radius: var(--radius);
@@ -651,16 +660,25 @@
         }
 
         card.innerHTML = `
-          <div class="top">
-            <div class="city">
-              <span class="badge">${escapeHtml(c.flag || "🌐")}</span>
-              <span>${escapeHtml(c.label)}</span>
-            </div>
-            <div class="pill" style="opacity:.95">
-              <span class="sunmoon" data-sunmoon="${tzEsc}">⏳</span>
-              <span data-tzname="${tzEsc}">---</span>
-            </div>
-          </div>
+<div class="top">
+  <div class="city">
+    <span class="badge">${escapeHtml(c.flag || "🌐")}</span>
+    <span>${escapeHtml(c.label)}</span>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:10px;">
+    <div class="pill" data-date="${tzEsc}">---</div>
+    <div class="pill wxPill" data-wx="${escapeHtml(c.tz)}|${escapeHtml(c.label)}">
+      <span class="wxIcon">🌡️</span>
+      <span class="wxTemp">--</span>
+      <span class="wxNote">Loading</span>
+    </div>
+    <div class="pill" style="opacity:.95">
+      <span class="sunmoon" data-sunmoon="${tzEsc}">⏳</span>
+      <span data-tzname="${tzEsc}">---</span>
+    </div>
+  </div>
+</div>
 
           <div class="mid">
             <div class="row" aria-label="12 hour clock (slide)">
@@ -678,15 +696,7 @@
             <div class="time24" data-tz24="${tzEsc}">--:--</div>
           </div>
 
-          <div class="meta">
-            <div class="pill" data-date="${tzEsc}">---</div>
-            <div class="pill wxPill" data-wx="${escapeHtml(c.tz)}|${escapeHtml(c.label)}">
-              <span class="wxIcon">🌡️</span>
-              <span class="wxTemp">--</span>
-              <span class="wxNote">Loading</span>
-            </div>
-          </div>
-        `;
+          `;
 
         grid.appendChild(card);
       }
