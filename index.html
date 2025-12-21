@@ -411,25 +411,46 @@
       return `linear-gradient(135deg, ${stops})`;
     }
 
-    function applyBackground(card, c){
-      const svg = SILHOUETTES[c.silhouette];
-      const bgSil = svg ? svgDataUri(svg) : "none";
-      const bgFlag = flagWashGradient(c.flagColors);
+   function applyBackground(card, c){
+  const svg = SILHOUETTES[c.silhouette];
+  const bgSil = svg ? svgDataUri(svg) : "none";
+  const bgFlag = flagWashGradient(c.flagColors);
 
-      card.style.backgroundImage = `
-        ${bgSil},
-        ${bgFlag},
-        radial-gradient(800px 240px at 20% 0%, rgba(${c.accent},0.22), transparent 55%),
-        linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))
-     card.style.backgroundRepeat = "no-repeat, no-repeat, no-repeat";
-card.style.backgroundSize = "105% auto, auto, auto";
-card.style.backgroundPosition = "right 6% bottom -2%, 0 0, 0 0";
-card.style.backgroundBlendMode = "multiply, soft-light, normal";
-      // silhouette first, flag second
-      card.style.backgroundBlendMode = "soft-light, soft-light, normal, normal";
-      // soften flag wash so it’s elegant
-      card.style.filter = "saturate(0.95)";
-    }
+  card.style.backgroundImage = `
+    ${bgSil},
+    ${bgFlag},
+    radial-gradient(800px 240px at 20% 0%, rgba(${c.accent},0.22), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))
+  `;
+
+  /* one value per layer — always */
+  card.style.backgroundRepeat = "no-repeat, no-repeat, no-repeat, no-repeat";
+
+  card.style.backgroundSize = `
+    105% auto,   /* silhouette */
+    100% 100%,  /* flag wash */
+    auto,       /* accent glow */
+    auto        /* glass */
+  `;
+
+  card.style.backgroundPosition = `
+    right 6% bottom -2%, /* silhouette */
+    0 0,                 /* flag wash */
+    0 0,
+    0 0
+  `;
+
+  /* blending is the magic */
+  card.style.backgroundBlendMode = `
+    multiply,    /* silhouette darkens */
+    soft-light,  /* flag tint */
+    soft-light,  /* glow */
+    normal       /* glass */
+  `;
+
+  /* optional: soften everything slightly */
+  card.style.filter = "saturate(0.95)";
+}
 
     function wxFromCode(code){
       const map = {
