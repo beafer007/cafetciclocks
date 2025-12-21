@@ -340,6 +340,41 @@
     .wxIcon{ font-size: 1.35em; }
     .wxTemp{ font-weight: 950; color: rgba(255,255,255,0.94); }
     .wxNote{ color: rgba(255,255,255,0.72); font-weight: 850; }
+
+    /* --- FORCE two-line header layout (wins over everything) --- */
+.card .top{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  gap: 10px !important;
+}
+
+.card .topRow{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+}
+
+/* key change: LEFT align meta row (not centered banner) */
+.card .topMeta{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:10px !important;
+  flex-wrap:wrap !important;     /* protects against overflow */
+}
+
+/* keep these pills from becoming huge */
+.card .wxTop{
+  font-size: clamp(16px, 1.4vw, 22px) !important;
+  padding: 10px 14px !important;
+  gap: 10px !important;
+}
+.card .datePill{
+  padding: 10px 14px !important;
+  font-size: clamp(14px, 1.2vw, 20px) !important;
+}
   </style>
 </head>
 
