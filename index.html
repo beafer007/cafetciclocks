@@ -61,14 +61,14 @@
       100%{ transform: translate3d(-2%,-2%,0) rotate(360deg); }
     }
 
-    .wrap{
-      position:relative;
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      padding:var(--pad);
-      gap:var(--pad);
-    }
+  .wrap{
+  position:relative;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  padding:var(--pad);
+  gap:0; /* was var(--pad) */
+}
 
     header{
       display:flex;
@@ -311,7 +311,48 @@
       font-weight: 900;
       color: rgba(255,255,255,0.85);
     }
+/* Subtle vignette + grain = premium signage vibe */
+body::after{
+  content:"";
+  position:absolute; inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(1200px 800px at 50% 40%, rgba(0,0,0,0.00), rgba(0,0,0,0.35)),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.015), rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+  mix-blend-mode: overlay;
+  opacity: 0.35;
+}
 
+/* Elegant gradient hairline border + top highlight */
+.card{
+  transform: translateZ(0);
+}
+.card::after{
+  content:"";
+  position:absolute; inset:0;
+  border-radius: var(--radius);
+  padding: 1px;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.22),
+    rgba(255,255,255,0.06),
+    rgba(255,255,255,0.14)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events:none;
+  opacity: 0.65;
+}
+.card .top::before{
+  content:"";
+  position:absolute; left:0; right:0; top:-30px;
+  height: 140px;
+  background: radial-gradient(600px 140px at 30% 20%, rgba(255,255,255,0.12), transparent 65%);
+  pointer-events:none;
+  opacity: 0.9;
+}
     .wxPill{
       padding: 12px 16px;
       gap: 12px;
@@ -325,12 +366,7 @@
 
 <body>
   <div class="wrap">
-    <header>
-      <div class="title"><span class="spark"></span>World Clocks</div>
-      <div class="subtitle"><span class="dot"></span><span id="localNow">Loading…</span></div>
-    </header>
-
-    <main class="grid" id="grid"></main>
+   <main class="grid" id="grid"></main>
   </div>
 
   <script>
@@ -354,7 +390,6 @@
     ];
 
     const grid = document.getElementById("grid");
-    const localNow = document.getElementById("localNow");
     const digitState = new Map();
 
     function escapeHtml(str){
@@ -559,13 +594,7 @@
     }
 
     function tick(){
-      const d = new Date();
-      const header = new Intl.DateTimeFormat(undefined, {
-        weekday:"short", month:"short", day:"2-digit",
-        hour:"2-digit", minute:"2-digit", second:"2-digit",
-        hour12:false
-      }).format(d);
-      localNow.textContent = `Local (24h): ${header}`;
+      
 
       // Update only visible cards
       document.querySelectorAll(".digitBox").forEach(box => {
