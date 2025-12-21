@@ -6,16 +6,16 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta http-equiv="refresh" content="21600">
+  <meta http-equiv="refresh" content="21600" />
   <title>City Clocks (Rotate 3)</title>
 
   <style>
     :root{
       --bg0:#070a0f;
       --bg1:#0a1220;
+
       --text: rgba(255,255,255,0.92);
       --muted: rgba(255,255,255,0.72);
-      --muted2: rgba(255,255,255,0.55);
 
       --pad: clamp(14px, 2vw, 28px);
       --radius: 24px;
@@ -32,15 +32,18 @@
 
     *{ box-sizing:border-box; }
     html, body{ height:100%; margin:0; }
+
     body{
-      background: radial-gradient(900px 600px at 15% 15%, rgba(120,170,255,0.14), transparent 55%),
-                  radial-gradient(900px 600px at 85% 85%, rgba(255,120,210,0.10), transparent 55%),
-                  linear-gradient(160deg, var(--bg0), var(--bg1));
+      background:
+        radial-gradient(900px 600px at 15% 15%, rgba(120,170,255,0.14), transparent 55%),
+        radial-gradient(900px 600px at 85% 85%, rgba(255,120,210,0.10), transparent 55%),
+        linear-gradient(160deg, var(--bg0), var(--bg1));
       color: var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       overflow:hidden;
       position:relative;
     }
+
     body::before{
       content:"";
       position:absolute; inset:-20%;
@@ -55,13 +58,14 @@
       animation: drift 22s linear infinite;
       pointer-events:none;
     }
+
     @keyframes drift{
       0%{ transform: translate3d(-2%,-2%,0) rotate(0deg); }
       50%{ transform: translate3d( 2%, 2%,0) rotate(180deg); }
       100%{ transform: translate3d(-2%,-2%,0) rotate(360deg); }
     }
 
-    /* Subtle vignette + grain = premium signage vibe */
+    /* vignette + grain */
     body::after{
       content:"";
       position:absolute; inset:0;
@@ -79,7 +83,6 @@
       display:flex;
       flex-direction:column;
       padding:var(--pad);
-      gap:0;
     }
 
     .grid{
@@ -95,36 +98,6 @@
       .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
-    .top{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.topRow{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.topMeta{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-    .wxTop{
-  font-size: clamp(16px, 1.4vw, 22px);
-  padding: 10px 14px;
-  gap: 10px;
-}
-
-.datePill{
-  padding: 10px 14px;
-  font-size: clamp(14px, 1.2vw, 20px);
-}
     .card{
       position:relative;
       border-radius: var(--radius);
@@ -141,11 +114,11 @@
       box-shadow: 0 14px 40px rgba(0,0,0,0.40);
       backdrop-filter: blur(10px);
 
-      /* key: make the silhouette blend elegantly */
+      /* silhouette blend */
       background-blend-mode: soft-light, normal, normal;
     }
 
-    /* Elegant gradient hairline border + top highlight */
+    /* elegant border hairline */
     .card::after{
       content:"";
       position:absolute; inset:0;
@@ -166,6 +139,7 @@
       z-index: 2;
     }
 
+    /* top highlight */
     .card .top::before{
       content:"";
       position:absolute; left:0; right:0; top:-30px;
@@ -176,8 +150,28 @@
       z-index: 1;
     }
 
-    .top, .mid, .meta{ position:relative; z-index:3; }
+    .top, .mid{ position:relative; z-index:3; }
 
+    /* two-row header */
+    .top{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .topRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    /* IMPORTANT: align under city, not centered */
+    .topMeta{
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
     .city{
       font-size: var(--city);
@@ -209,7 +203,10 @@
       color: var(--muted);
       font-size: var(--meta);
       font-variant-numeric: tabular-nums;
+      letter-spacing: 0.3px;
+      font-weight: 900;
     }
+
     .sunmoon{
       width: 22px; height: 22px;
       display:inline-grid;
@@ -217,6 +214,17 @@
       border-radius: 999px;
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    /* top pills sizing */
+    .wxTop{
+      font-size: clamp(16px, 1.4vw, 22px);
+      padding: 10px 14px;
+      gap: 10px;
+    }
+    .datePill{
+      padding: 10px 14px;
+      font-size: clamp(14px, 1.2vw, 20px);
     }
 
     .mid{ margin-top: 14px; }
@@ -277,6 +285,7 @@
         inset 0 -1px 0 rgba(0,0,0,0.55);
       z-index:3;
     }
+
     .stack{
       position:absolute;
       left:0; top:0;
@@ -285,6 +294,7 @@
       transform: translate3d(0,0,0);
       transition: transform 280ms cubic-bezier(.2,.9,.2,1);
     }
+
     .cell{
       height: var(--d-h);
       display:flex;
@@ -314,67 +324,9 @@
       text-shadow: 0 14px 30px rgba(0,0,0,0.55);
     }
 
-    .meta{
-      margin-top: 14px;
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* Unify date + weather typography */
-    .pill,
-    .wxPill {
-      font-family: inherit;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.3px;
-      font-weight: 900;
-      color: rgba(255,255,255,0.85);
-    }
-    .wxPill{
-      padding: 12px 16px;
-      gap: 12px;
-      font-size: clamp(18px, 1.9vw, 30px);
-    }
     .wxIcon{ font-size: 1.35em; }
     .wxTemp{ font-weight: 950; color: rgba(255,255,255,0.94); }
     .wxNote{ color: rgba(255,255,255,0.72); font-weight: 850; }
-
-    /* --- FORCE two-line header layout (wins over everything) --- */
-.card .top{
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:stretch !important;
-  gap: 10px !important;
-}
-
-.card .topRow{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:space-between !important;
-  gap:12px !important;
-}
-
-/* key change: LEFT align meta row (not centered banner) */
-.card .topMeta{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:flex-start !important;
-  gap:10px !important;
-  flex-wrap:wrap !important;     /* protects against overflow */
-}
-
-/* keep these pills from becoming huge */
-.card .wxTop{
-  font-size: clamp(16px, 1.4vw, 22px) !important;
-  padding: 10px 14px !important;
-  gap: 10px !important;
-}
-.card .datePill{
-  padding: 10px 14px !important;
-  font-size: clamp(14px, 1.2vw, 20px) !important;
-}
   </style>
 </head>
 
@@ -392,15 +344,15 @@
     let pageIndex = 0;
 
     const CLOCKS = [
-      { label: "Providenciales", tz: "America/Grand_Turk", flag:"🇹🇨", accent:"120,190,255", lat:21.6940, lon:-71.7979, silhouette:"provo" },
-      { label: "Miami", tz: "America/New_York", flag:"🇺🇸", accent:"255,120,170", lat:25.7617, lon:-80.1918, silhouette:"miami" },
-      { label: "Houston", tz: "America/Chicago", flag:"🇺🇸", accent:"140,255,190", lat:29.7604, lon:-95.3698, silhouette:"houston" },
-      { label: "Manila", tz: "Asia/Manila", flag:"🇵🇭", accent:"120,255,230", lat:14.5995, lon:120.9842, silhouette:"manila" },
-      { label: "Santiago", tz: "America/Santo_Domingo", flag:"🇩🇴", accent:"255,190,120", lat:19.4517, lon:-70.6970, silhouette:"santiago" },
-      { label: "London", tz: "Europe/London", flag:"🇬🇧", accent:"170,150,255", lat:51.5072, lon:-0.1276, silhouette:"london" },
-      { label: "Toronto", tz: "America/Toronto", flag:"🇨🇦", accent:"200,60,60", lat:43.6532, lon:-79.3832, silhouette:"toronto" },
-      { label: "Kingston", tz: "America/Jamaica", flag:"🇯🇲", accent:"255,120,120", lat:17.9712, lon:-76.7936, silhouette:"kingston" },
-      { label: "Dubai", tz: "Asia/Dubai", flag:"🇦🇪", accent:"255,180,80", lat:25.2048, lon:55.2708, silhouette:"dubai" },
+      { label: "Providenciales", tz: "America/Grand_Turk",     flag:"🇹🇨", accent:"120,190,255", lat:21.6940, lon:-71.7979, silhouette:"provo" },
+      { label: "Miami",          tz: "America/New_York",       flag:"🇺🇸", accent:"255,120,170", lat:25.7617, lon:-80.1918, silhouette:"miami" },
+      { label: "Houston",        tz: "America/Chicago",        flag:"🇺🇸", accent:"140,255,190", lat:29.7604, lon:-95.3698, silhouette:"houston" },
+      { label: "Manila",         tz: "Asia/Manila",            flag:"🇵🇭", accent:"120,255,230", lat:14.5995, lon:120.9842, silhouette:"manila" },
+      { label: "Santiago",       tz: "America/Santo_Domingo",  flag:"🇩🇴", accent:"255,190,120", lat:19.4517, lon:-70.6970, silhouette:"santiago" },
+      { label: "London",         tz: "Europe/London",          flag:"🇬🇧", accent:"170,150,255", lat:51.5072, lon:-0.1276,  silhouette:"london" },
+      { label: "Toronto",        tz: "America/Toronto",        flag:"🇨🇦", accent:"200,60,60",   lat:43.6532, lon:-79.3832, silhouette:"toronto" },
+      { label: "Kingston",       tz: "America/Jamaica",        flag:"🇯🇲", accent:"255,120,120", lat:17.9712, lon:-76.7936, silhouette:"kingston" },
+      { label: "Dubai",          tz: "Asia/Dubai",             flag:"🇦🇪", accent:"255,180,80",  lat:25.2048, lon:55.2708,  silhouette:"dubai" },
     ];
 
     const grid = document.getElementById("grid");
@@ -411,24 +363,22 @@
         "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
       }[s]));
     }
+
     function cssEscape(s){
       if (window.CSS && CSS.escape) return CSS.escape(s);
       return String(s).replace(/["\\]/g, "\\$&");
     }
 
     // Tiny landmark silhouettes (hand-made, non-copyrighted, ultra-light)
-    // Rendered as subtle bottom-right ghosts.
     const SILHOUETTES = {
       toronto: `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
           <g fill="white" opacity="0.22">
             <rect x="0" y="520" width="1200" height="80"/>
-            <!-- CN Tower -->
             <rect x="560" y="130" width="16" height="390" rx="8"/>
             <rect x="540" y="230" width="56" height="16" rx="8"/>
             <polygon points="568,70 590,130 546,130"/>
             <rect x="566" y="40" width="4" height="40"/>
-            <!-- skyline -->
             <rect x="240" y="360" width="70" height="160" rx="10"/>
             <rect x="330" y="300" width="90" height="220" rx="12"/>
             <rect x="430" y="380" width="90" height="140" rx="12"/>
@@ -442,13 +392,11 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
           <g fill="white" opacity="0.22">
             <rect x="0" y="520" width="1200" height="80"/>
-            <!-- Big Ben-ish tower -->
             <rect x="820" y="180" width="90" height="340" rx="14"/>
             <rect x="808" y="150" width="114" height="40" rx="14"/>
             <rect x="835" y="110" width="60" height="50" rx="12"/>
             <polygon points="865,70 910,110 820,110"/>
             <circle cx="865" cy="260" r="34" fill="none" stroke="white" stroke-width="14" opacity="0.22"/>
-            <!-- low skyline -->
             <rect x="260" y="360" width="120" height="160" rx="14"/>
             <rect x="400" y="330" width="140" height="190" rx="14"/>
             <rect x="560" y="390" width="160" height="130" rx="14"/>
@@ -459,10 +407,8 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
           <g fill="white" opacity="0.22">
             <rect x="0" y="520" width="1200" height="80"/>
-            <!-- Burj Khalifa-ish -->
             <polygon points="820,520 900,520 880,180 870,120 860,80 850,120 840,180" />
             <rect x="858" y="40" width="6" height="60"/>
-            <!-- surrounding towers -->
             <rect x="640" y="360" width="90" height="160" rx="12"/>
             <rect x="740" y="310" width="70" height="210" rx="12"/>
             <rect x="930" y="350" width="120" height="170" rx="14"/>
@@ -473,13 +419,11 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
           <g fill="white" opacity="0.22">
             <rect x="0" y="520" width="1200" height="80"/>
-            <!-- Palm -->
             <rect x="940" y="240" width="20" height="280" rx="10"/>
             <path d="M950 240 C880 220, 850 180, 870 150 C900 160, 930 190, 970 210 Z" />
             <path d="M950 240 C1020 220, 1050 180, 1030 150 C1000 160, 970 190, 930 210 Z" />
             <path d="M950 260 C900 270, 860 250, 840 220 C880 215, 910 235, 950 240 Z" />
             <path d="M950 260 C1000 270, 1040 250, 1060 220 C1020 215, 990 235, 950 240 Z" />
-            <!-- Art deco-ish blocks -->
             <rect x="640" y="360" width="140" height="160" rx="20"/>
             <rect x="800" y="330" width="120" height="190" rx="20"/>
           </g>
@@ -489,12 +433,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
           <g fill="white" opacity="0.22">
             <rect x="0" y="520" width="1200" height="80"/>
-            <!-- abstract skyline -->
             <rect x="700" y="340" width="120" height="180" rx="14"/>
             <rect x="840" y="300" width="90" height="220" rx="14"/>
             <rect x="940" y="380" width="120" height="140" rx="14"/>
             <rect x="600" y="380" width="80" height="140" rx="14"/>
-            <!-- subtle "rocket" -->
             <polygon points="520,520 560,520 540,370" />
             <rect x="534" y="340" width="12" height="30" rx="6"/>
           </g>
@@ -504,11 +446,9 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
           <g fill="white" opacity="0.22">
             <rect x="0" y="520" width="1200" height="80"/>
-            <!-- stylized monument + skyline -->
             <rect x="840" y="340" width="120" height="180" rx="14"/>
             <rect x="700" y="380" width="120" height="140" rx="14"/>
             <rect x="620" y="330" width="70" height="190" rx="14"/>
-            <!-- monument -->
             <rect x="520" y="420" width="40" height="100" rx="10"/>
             <polygon points="540,320 580,420 500,420" />
           </g>
@@ -518,7 +458,6 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
           <g fill="white" opacity="0.22">
             <rect x="0" y="520" width="1200" height="80"/>
-            <!-- cathedral-ish -->
             <rect x="760" y="360" width="220" height="160" rx="18"/>
             <rect x="790" y="320" width="60" height="200" rx="14"/>
             <rect x="890" y="320" width="60" height="200" rx="14"/>
@@ -531,10 +470,8 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
           <g fill="white" opacity="0.22">
             <rect x="0" y="520" width="1200" height="80"/>
-            <!-- mountains -->
             <path d="M520 520 L650 360 L780 520 Z" />
             <path d="M660 520 L780 420 L900 520 Z" opacity="0.18"/>
-            <!-- palm -->
             <rect x="980" y="300" width="18" height="220" rx="9"/>
             <path d="M989 300 C940 290, 910 260, 920 230 C950 240, 970 265, 1005 280 Z" />
             <path d="M989 300 C1038 290, 1068 260, 1058 230 C1028 240, 1008 265, 973 280 Z" />
@@ -545,9 +482,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
           <g fill="white" opacity="0.22">
             <rect x="0" y="520" width="1200" height="80"/>
-            <!-- wave -->
             <path d="M520 470 C620 420, 720 520, 820 470 C920 420, 1020 520, 1120 470 L1120 520 L520 520 Z" opacity="0.18"/>
-            <!-- palm -->
             <rect x="980" y="260" width="18" height="260" rx="9"/>
             <path d="M989 260 C930 250, 900 210, 910 180 C940 190, 965 220, 1002 235 Z" />
             <path d="M989 260 C1048 250, 1078 210, 1068 180 C1038 190, 1013 220, 976 235 Z" />
@@ -593,20 +528,6 @@
       }).format(new Date());
     }
 
-    async function fetchWeather(lat, lon){
-      const url =
-        `https://api.open-meteo.com/v1/forecast` +
-        `?latitude=${encodeURIComponent(lat)}` +
-        `&longitude=${encodeURIComponent(lon)}` +
-        `&current=temperature_2m,weather_code` +
-        `&temperature_unit=fahrenheit` +
-        `&timezone=auto`;
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) throw new Error("Weather fetch failed");
-      const data = await res.json();
-      return { temp: data?.current?.temperature_2m, code: data?.current?.weather_code };
-    }
-
     function fmtDate(tz){
       return new Intl.DateTimeFormat(undefined, {
         timeZone: tz, weekday:"short", month:"short", day:"2-digit"
@@ -638,6 +559,21 @@
       return (hour >= 6 && hour < 18) ? "☀️" : "🌙";
     }
 
+    async function fetchWeather(lat, lon){
+      const url =
+        `https://api.open-meteo.com/v1/forecast` +
+        `?latitude=${encodeURIComponent(lat)}` +
+        `&longitude=${encodeURIComponent(lon)}` +
+        `&current=temperature_2m,weather_code` +
+        `&temperature_unit=fahrenheit` +
+        `&timezone=auto`;
+
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("Weather fetch failed");
+      const data = await res.json();
+      return { temp: data?.current?.temperature_2m, code: data?.current?.weather_code };
+    }
+
     function digitTemplate(tz, pos){
       const key = `${tz}|${pos}`;
       digitState.set(key, 0);
@@ -664,6 +600,7 @@
           const wx = await fetchWeather(c.lat, c.lon);
           const [icon, labelText] = wxFromCode(wx.code);
           const t = (typeof wx.temp === "number") ? Math.round(wx.temp) : null;
+
           el.innerHTML = `<span class="wxIcon">${icon}</span>
                           <span class="wxTemp">${t !== null ? `${t}°F` : "--"}</span>
                           <span class="wxNote">${escapeHtml(labelText)}</span>`;
@@ -675,6 +612,21 @@
       });
 
       await Promise.allSettled(tasks);
+    }
+
+    function applySilhouette(card, c){
+      const svg = SILHOUETTES[c.silhouette];
+      if (!svg) return;
+
+      const bg0 = svgDataUri(svg);
+      card.style.backgroundImage = `
+        ${bg0},
+        radial-gradient(800px 240px at 20% 0%, rgba(${c.accent},0.22), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))
+      `;
+      card.style.backgroundRepeat = "no-repeat, no-repeat, no-repeat";
+      card.style.backgroundSize = "90% auto, auto, auto";
+      card.style.backgroundPosition = "right 8% bottom -6%, 0 0, 0 0";
     }
 
     function buildPage(){
@@ -689,6 +641,7 @@
 
       for (const c of slice){
         const tzEsc = escapeHtml(c.tz);
+
         const card = document.createElement("section");
         card.className = "card";
         card.style.setProperty("--accent", c.accent);
@@ -696,44 +649,33 @@
         card.setAttribute("data-tz", c.tz);
         card.setAttribute("data-label", c.label);
 
-        // Apply silhouette as the FIRST background layer (so it blends softly)
-        const svg = SILHOUETTES[c.silhouette];
-        if (svg) {
-          const bg0 = svgDataUri(svg);
-          card.style.backgroundImage = `
-            ${bg0},
-            radial-gradient(800px 240px at 20% 0%, rgba(${c.accent},0.22), transparent 55%),
-            linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))
-          `;
-          card.style.backgroundRepeat = "no-repeat, no-repeat, no-repeat";
-          card.style.backgroundSize = "90% auto, auto, auto";
-          card.style.backgroundPosition = "right 8% bottom -6%, 0 0, 0 0";
-        }
+        applySilhouette(card, c);
 
         card.innerHTML = `
-<div class="top">
-  <div class="topRow">
-    <div class="city">
-      <span class="badge">${escapeHtml(c.flag || "🌐")}</span>
-      <span>${escapeHtml(c.label)}</span>
-    </div>
+          <div class="top">
+            <div class="topRow">
+              <div class="city">
+                <span class="badge">${escapeHtml(c.flag || "🌐")}</span>
+                <span>${escapeHtml(c.label)}</span>
+              </div>
 
-    <div class="pill tzPill" style="opacity:.95">
-      <span class="sunmoon" data-sunmoon="${tzEsc}">⏳</span>
-      <span data-tzname="${tzEsc}">---</span>
-    </div>
-  </div>
+              <div class="pill tzPill" style="opacity:.95">
+                <span class="sunmoon" data-sunmoon="${tzEsc}">⏳</span>
+                <span data-tzname="${tzEsc}">---</span>
+              </div>
+            </div>
 
-  <div class="topMeta">
-    <div class="pill datePill" data-date="${tzEsc}">---</div>
+            <div class="topMeta">
+              <div class="pill datePill" data-date="${tzEsc}">---</div>
 
-    <div class="pill wxPill wxTop" data-wx="${escapeHtml(c.tz)}|${escapeHtml(c.label)}">
-      <span class="wxIcon">🌡️</span>
-      <span class="wxTemp">--</span>
-      <span class="wxNote">Loading</span>
-    </div>
-  </div>
-</div>
+              <div class="pill wxTop" data-wx="${escapeHtml(c.tz)}|${escapeHtml(c.label)}">
+                <span class="wxIcon">🌡️</span>
+                <span class="wxTemp">--</span>
+                <span class="wxNote">Loading</span>
+              </div>
+            </div>
+          </div>
+
           <div class="mid">
             <div class="row" aria-label="12 hour clock (slide)">
               ${digitTemplate(c.tz,0)}
@@ -749,8 +691,7 @@
 
             <div class="time24" data-tz24="${tzEsc}">--:--</div>
           </div>
-
-          `;
+        `;
 
         grid.appendChild(card);
       }
@@ -774,8 +715,7 @@
         const tz = box.getAttribute("data-tz");
         const pos = Number(box.getAttribute("data-pos"));
         const digits = time12Digits(tz);
-        const n = Number(digits[pos] || "0");
-        setDigit(box, n);
+        setDigit(box, Number(digits[pos] || "0"));
       });
 
       document.querySelectorAll("[data-ampm]").forEach(el => {
@@ -800,17 +740,19 @@
       });
     }
 
+    function rotateOnce(){
+      grid.classList.add("fading");
+      setTimeout(() => {
+        pageIndex++;
+        buildPage();
+        tick();
+        refreshVisibleWeather();
+        grid.classList.remove("fading");
+      }, 360);
+    }
+
     function startRotation(){
-      setInterval(() => {
-        grid.classList.add("fading");
-        setTimeout(() => {
-          pageIndex++;
-          buildPage();
-          tick();
-          refreshVisibleWeather();
-          grid.classList.remove("fading");
-        }, 360);
-      }, ROTATE_MS);
+      setInterval(rotateOnce, ROTATE_MS);
     }
 
     // Start
