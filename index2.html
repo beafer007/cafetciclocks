@@ -137,7 +137,7 @@
       padding: calc(var(--pad) * 0.95);
       display:flex;
       flex-direction:column;
-      justify-content:space-between;
+      justify-content: flex-start;
       overflow:hidden;
 
       background:
@@ -189,7 +189,10 @@
     }
 
     /* content layers */
-    .mid{ position:relative; z-index:3; margin-top: 14px; }
+    .mid{ position:relative; z-index:3;   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; margin-top: 10px; }
 
     .city{
       font-size: var(--city);
