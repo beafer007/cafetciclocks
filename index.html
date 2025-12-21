@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <meta http-equiv="refresh" content="21600">
-  <title>World Clocks (Slide + Weather v5)</title>
+  <title>World Clocks (Slide + Weather v6 - Rotate 3)</title>
 
   <style>
     :root{
@@ -115,7 +115,10 @@
       display:grid;
       gap: var(--pad);
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      transition: opacity 350ms ease;
     }
+    .grid.fading{ opacity: 0; }
+
     @media (max-width: 1150px){
       .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -165,10 +168,8 @@
       text-shadow: 0 10px 28px rgba(0,0,0,0.45);
       line-height:1.15;
     }
-    .city span:last-child{
-  	color: #ffd84a;
-	}
-    
+    .city span:last-child{ color: #ffd84a; }
+
     .badge{
       font-size: clamp(26px, 2.6vw, 42px);
       line-height:1;
@@ -234,7 +235,6 @@
     .colon.blink{ animation: blink 1s steps(1,end) infinite; }
     @keyframes blink{ 50%{ opacity:0.35; } }
 
-    /* Slide digit */
     .digitBox{
       width: var(--d-w);
       height: var(--d-h);
@@ -282,10 +282,10 @@
       background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(0,0,0,0.35));
     }
 
-    /* ✅ ONLY the smaller time is yellow */
+    /* Small (24h) time is yellow */
     .time12{
       margin-top: 14px;
-      color: #ffd84a; /* yellow */
+      color: #ffd84a;
       font-size: clamp(28px, 2.8vw, 52px);
       font-weight: 950;
       letter-spacing: 0.8px;
@@ -301,16 +301,17 @@
       align-items:center;
       font-variant-numeric: tabular-nums;
     }
-/* Unify date + weather typography */
-.pill,
-.wxPill {
-  font-family: inherit;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.3px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.85);
-}
-    /* BIG WEATHER */
+
+    /* Unify date + weather typography */
+    .pill,
+    .wxPill {
+      font-family: inherit;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.3px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.85);
+    }
+
     .wxPill{
       padding: 12px 16px;
       gap: 12px;
@@ -335,17 +336,22 @@
   <script>
     const WEATHER_REFRESH_MS = 15 * 60 * 1000;
 
-const CLOCKS = [
-  { label: "Providenciales", tz: "America/Grand_Turk", flag:"🇹🇨", accent:"120,190,255", lat:21.6940, lon:-71.7979 },
-  { label: "Miami", tz: "America/New_York", flag:"🇺🇸", accent:"255,120,170", lat:25.7617, lon:-80.1918 },
-  { label: "Houston", tz: "America/Chicago", flag:"🇺🇸", accent:"140,255,190", lat:29.7604, lon:-95.3698 },
-  { label: "Manila", tz: "Asia/Manila", flag:"🇵🇭", accent:"120,255,230", lat:14.5995, lon:120.9842 },
-  { label: "Santiago", tz: "America/Santo_Domingo", flag:"🇩🇴", accent:"255,190,120", lat:19.4517, lon:-70.6970 },
-  { label: "London", tz: "Europe/London", flag:"🇬🇧", accent:"170,150,255", lat:51.5072, lon:-0.1276 },
-  { label: "Toronto", tz: "America/Toronto", flag:"🇨🇦", accent:"200,60,60", lat:43.6532, lon:-79.3832 },
-  { label: "Kingston", tz: "America/Jamaica", flag:"🇯🇲", accent:"255,120,120", lat:17.9712, lon:-76.7936 },
-  { label: "Dubai", tz: "Asia/Dubai", flag:"🇦🇪", accent:"255,180,80", lat:25.2048, lon:55.2708 },
-];
+    // Rotation settings
+    const PAGE_SIZE = 3;       // show 3 clocks at a time
+    const ROTATE_MS = 15000;   // rotate every 15 seconds
+    let pageIndex = 0;
+
+    const CLOCKS = [
+      { label: "Providenciales", tz: "America/Grand_Turk", flag:"🇹🇨", accent:"120,190,255", lat:21.6940, lon:-71.7979 },
+      { label: "Miami", tz: "America/New_York", flag:"🇺🇸", accent:"255,120,170", lat:25.7617, lon:-80.1918 },
+      { label: "Houston", tz: "America/Chicago", flag:"🇺🇸", accent:"140,255,190", lat:29.7604, lon:-95.3698 },
+      { label: "Manila", tz: "Asia/Manila", flag:"🇵🇭", accent:"120,255,230", lat:14.5995, lon:120.9842 },
+      { label: "Santiago", tz: "America/Santo_Domingo", flag:"🇩🇴", accent:"255,190,120", lat:19.4517, lon:-70.6970 },
+      { label: "London", tz: "Europe/London", flag:"🇬🇧", accent:"170,150,255", lat:51.5072, lon:-0.1276 },
+      { label: "Toronto", tz: "America/Toronto", flag:"🇨🇦", accent:"200,60,60", lat:43.6532, lon:-79.3832 },
+      { label: "Kingston", tz: "America/Jamaica", flag:"🇯🇲", accent:"255,120,120", lat:17.9712, lon:-76.7936 },
+      { label: "Dubai", tz: "Asia/Dubai", flag:"🇦🇪", accent:"255,180,80", lat:25.2048, lon:55.2708 },
+    ];
 
     const grid = document.getElementById("grid");
     const localNow = document.getElementById("localNow");
@@ -376,21 +382,24 @@ const CLOCKS = [
       };
       return map[code] || ["🌡️","Weather"];
     }
-	function time12Digits(tz){
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: tz,
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true
-  }).formatToParts(new Date());
 
-  const h = parts.find(p => p.type === "hour")?.value ?? "12";
-  const m = parts.find(p => p.type === "minute")?.value ?? "00";
-  const s = parts.find(p => p.type === "second")?.value ?? "00";
+    function time12Digits(tz){
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+      }).formatToParts(new Date());
 
-  return `${h}${m}${s}`;
-}
+      const h = parts.find(p => p.type === "hour")?.value ?? "12";
+      const m = parts.find(p => p.type === "minute")?.value ?? "00";
+      const s = parts.find(p => p.type === "second")?.value ?? "00";
+      return `${h}${m}${s}`;
+    }
+
+    function fmtTime24(tz){
+      return new Intl.DateTimeFormat(undefined, {
+        timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false
+      }).format(new Date());
+    }
+
     async function fetchWeather(lat, lon){
       const url =
         `https://api.open-meteo.com/v1/forecast` +
@@ -406,23 +415,31 @@ const CLOCKS = [
       return { temp: data?.current?.temperature_2m, code: data?.current?.weather_code };
     }
 
-    async function refreshAllWeather(){
-      const tasks = CLOCKS.map(async c => {
-        const el = document.querySelector(`[data-wx="${cssEscape(c.tz)}|${cssEscape(c.label)}"]`);
+    async function refreshVisibleWeather(){
+      const cards = Array.from(document.querySelectorAll("[data-card]"));
+      const tasks = cards.map(async (card) => {
+        const tz = card.getAttribute("data-tz");
+        const label = card.getAttribute("data-label");
+        const c = CLOCKS.find(x => x.tz === tz && x.label === label);
+        if (!c) return;
+
+        const el = card.querySelector(`[data-wx="${cssEscape(c.tz)}|${cssEscape(c.label)}"]`);
         if (!el) return;
+
         try{
           const wx = await fetchWeather(c.lat, c.lon);
-          const [icon, label] = wxFromCode(wx.code);
+          const [icon, labelText] = wxFromCode(wx.code);
           const t = (typeof wx.temp === "number") ? Math.round(wx.temp) : null;
           el.innerHTML = `<span class="wxIcon">${icon}</span>
                           <span class="wxTemp">${t !== null ? `${t}°F` : "--"}</span>
-                          <span class="wxNote">${escapeHtml(label)}</span>`;
+                          <span class="wxNote">${escapeHtml(labelText)}</span>`;
         } catch {
           el.innerHTML = `<span class="wxIcon">🌡️</span>
                           <span class="wxTemp">--</span>
                           <span class="wxNote">Weather</span>`;
         }
       });
+
       await Promise.allSettled(tasks);
     }
 
@@ -431,44 +448,30 @@ const CLOCKS = [
         timeZone: tz, weekday:"short", month:"short", day:"2-digit"
       }).format(new Date());
     }
-    function fmtTime12(tz){
-      return new Intl.DateTimeFormat(undefined, {
-        timeZone: tz, hour:"numeric", minute:"2-digit", hour12:true
-      }).format(new Date());
-    }
+
     function ampmOnly(tz){
       const parts = new Intl.DateTimeFormat("en-US", {
         timeZone: tz, hour:"numeric", hour12:true
       }).formatToParts(new Date());
       return (parts.find(p=>p.type==="dayPeriod")?.value || "").toUpperCase();
     }
+
     function tzShortName(tz){
       const parts = new Intl.DateTimeFormat(undefined, {
         timeZone: tz, timeZoneName:"short"
       }).formatToParts(new Date());
       return parts.find(p=>p.type==="timeZoneName")?.value || tz;
     }
+
     function tzHour(tz){
       const parts = new Intl.DateTimeFormat("en-US", {
         timeZone: tz, hour:"2-digit", hour12:false
       }).formatToParts(new Date());
       return Number(parts.find(p=>p.type==="hour")?.value ?? "0");
     }
+
     function sunOrMoonEmoji(hour){
       return (hour >= 6 && hour < 18) ? "☀️" : "🌙";
-    }
-
-    function time24Digits(tz){
-      const parts = new Intl.DateTimeFormat("en-US", {
-        timeZone: tz,
-        hour:"2-digit", minute:"2-digit", second:"2-digit",
-        hour12:false
-      }).formatToParts(new Date());
-
-      const h = parts.find(p=>p.type==="hour")?.value ?? "00";
-      const m = parts.find(p=>p.type==="minute")?.value ?? "00";
-      const s = parts.find(p=>p.type==="second")?.value ?? "00";
-      return `${h}${m}${s}`;
     }
 
     function digitTemplate(tz, pos){
@@ -482,13 +485,24 @@ const CLOCKS = [
       `;
     }
 
-    function build(){
+    function buildPage(){
       grid.innerHTML = "";
-      for (const c of CLOCKS){
+      digitState.clear();
+
+      const totalPages = Math.ceil(CLOCKS.length / PAGE_SIZE);
+      if (pageIndex >= totalPages) pageIndex = 0;
+
+      const start = pageIndex * PAGE_SIZE;
+      const slice = CLOCKS.slice(start, start + PAGE_SIZE);
+
+      for (const c of slice){
         const tzEsc = escapeHtml(c.tz);
         const card = document.createElement("section");
         card.className = "card";
         card.style.setProperty("--accent", c.accent);
+        card.setAttribute("data-card", "1");
+        card.setAttribute("data-tz", c.tz);
+        card.setAttribute("data-label", c.label);
 
         card.innerHTML = `
           <div class="top">
@@ -503,7 +517,7 @@ const CLOCKS = [
           </div>
 
           <div class="mid">
-            <div class="row" aria-label="24 hour clock (slide)">
+            <div class="row" aria-label="12 hour clock (slide)">
               ${digitTemplate(c.tz,0)}
               ${digitTemplate(c.tz,1)}
               <div class="colon blink">:</div>
@@ -514,7 +528,8 @@ const CLOCKS = [
               ${digitTemplate(c.tz,5)}
               <div class="ampm" data-ampm="${tzEsc}">--</div>
             </div>
-            <div class="time12" data-tz12="${tzEsc}">--:-- --</div>
+            <!-- Under flip: 24h text -->
+            <div class="time12" data-tz12="${tzEsc}">--:--</div>
           </div>
 
           <div class="meta">
@@ -552,53 +567,73 @@ const CLOCKS = [
       }).format(d);
       localNow.textContent = `Local (24h): ${header}`;
 
-document.querySelectorAll(".digitBox").forEach(box => {
-  const tz = box.getAttribute("data-tz");
-  const pos = Number(box.getAttribute("data-pos"));
-  const digits = time12Digits(tz);
-  const n = Number(digits[pos] || "0");
-  setDigit(box, n);
-});
-
-function fmtTime24(tz){
-  return new Intl.DateTimeFormat(undefined, {
-    timeZone: tz,
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false
-  }).format(new Date());
-}
+      // Update only visible cards
+      document.querySelectorAll(".digitBox").forEach(box => {
+        const tz = box.getAttribute("data-tz");
+        const pos = Number(box.getAttribute("data-pos"));
+        const digits = time12Digits(tz);
+        const n = Number(digits[pos] || "0");
+        setDigit(box, n);
+      });
 
       document.querySelectorAll("[data-ampm]").forEach(el => {
         el.textContent = ampmOnly(el.getAttribute("data-ampm"));
       });
+
+      // Under flip: 24h text
       document.querySelectorAll("[data-tz12]").forEach(el => {
         el.textContent = fmtTime24(el.getAttribute("data-tz12"));
       });
+
       document.querySelectorAll("[data-date]").forEach(el => {
         el.textContent = fmtDate(el.getAttribute("data-date"));
       });
+
       document.querySelectorAll("[data-tzname]").forEach(el => {
         el.textContent = tzShortName(el.getAttribute("data-tzname"));
       });
+
       document.querySelectorAll("[data-sunmoon]").forEach(el => {
         const tz = el.getAttribute("data-sunmoon");
         el.textContent = sunOrMoonEmoji(tzHour(tz));
       });
     }
 
-    build();
+    function startRotation(){
+      setInterval(() => {
+        grid.classList.add("fading");
+        setTimeout(() => {
+          pageIndex++;
+          buildPage();
+          tick();
+          refreshVisibleWeather();
+          grid.classList.remove("fading");
+        }, 360);
+      }, ROTATE_MS);
+    }
+
+    // Initial render
+    buildPage();
     tick();
     setInterval(tick, 1000);
 
-    refreshAllWeather();
-    setInterval(refreshAllWeather, WEATHER_REFRESH_MS);
+    // Weather: refresh current page now + every 15 min
+    refreshVisibleWeather();
+    setInterval(refreshVisibleWeather, WEATHER_REFRESH_MS);
 
+    // Rotate pages
+    startRotation();
+
+    // Resize rebuild
     window.addEventListener("resize", (() => {
       let t;
       return () => {
         clearTimeout(t);
-        t = setTimeout(() => { build(); tick(); refreshAllWeather(); }, 200);
+        t = setTimeout(() => {
+          buildPage();
+          tick();
+          refreshVisibleWeather();
+        }, 200);
       };
     })());
   </script>
