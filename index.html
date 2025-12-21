@@ -301,13 +301,20 @@
       align-items:center;
       font-variant-numeric: tabular-nums;
     }
-
+/* Unify date + weather typography */
+.pill,
+.wxPill {
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.3px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.85);
+}
     /* BIG WEATHER */
     .wxPill{
       padding: 12px 16px;
       gap: 12px;
       font-size: clamp(18px, 1.9vw, 30px);
-      font-weight: 900;
     }
     .wxIcon{ font-size: 1.35em; }
     .wxTemp{ font-weight: 950; color: rgba(255,255,255,0.94); }
