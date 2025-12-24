@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta http-equiv="refresh" content="21600">
+  <title>City Clocks (Pi-Lite Rotate 3)</title>
+
+  <style>
+    :root{
+      --bg0:#070a0f;
+      --bg1:#0b1526;
+
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.76);
+
+      --pad: clamp(14px, 2vw, 28px);
+      --radius: 22px;
+
+      --city: clamp(18px, 2.2vw, 36px);
+      --meta: clamp(14px, 1.6vw, 24px);
+
+      /* digit sizing */
+      --d-h: clamp(74px, 7.4vw, 126px);
+      --d-w: calc(var(--d-h) * 0.72);
+      --gap: clamp(8px, 1vw, 14px);
+      --colon-w: clamp(14px, 1.6vw, 26px);
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; margin:0; }
+
+    /* PI-LITE BACKGROUND: no conic gradients, no animation, no filters */
+    body{
+      background:
+        radial-gradient(900px 600px at 15% 15%, rgba(120,170,255,0.10), transparent 55%),
+        radial-gradient(900px 600px at 85% 85%, rgba(255,120,210,0.08), transparent 55%),
+        linear-gradient(160deg, var(--bg0), var(--bg1));
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow:hidden;
+    }
+
+    /* small vignette + subtle grain (cheap) */
+    body::after{
+      content:"";
+      position:absolute; inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(1200px 800px at 50% 40%, rgba(0,0,0,0.00), rgba(0,0,0,0.30)),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.012), rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+      opacity: 0.30;
+    }
+
+    .wrap{
+      position:relative;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      padding:var(--pad);
+    }
+
+    .grid{
+      flex:1;
+      display:grid;
+      gap: var(--pad);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      transition: opacity 260ms ease;
+      position: relative;
+      z-index: 1;
+    }
+    .grid.fading{ opacity: 0; }
+
+    @media (max-width: 1150px){
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    /* CARD: no backdrop-filter, no blend-modes */
+    .card{
+      position:relative;
+      border-radius: var(--radius);
+      padding: calc(var(--pad) * 0.95);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.38);
+
+      /* keep this simple: base gradient layers only */
+      background:
+        radial-gradient(900px 320px at 20% 0%, rgba(var(--accent),0.22), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+    }
+
+    /* top highlight (cheap) */
+    .card::after{
+      content:"";
+      position:absolute; inset:0;
+      border-radius: var(--radius);
+      background: radial-gradient(600px 220px at 30% 0%, rgba(255,255,255,0.10), transparent 60%);
+      pointer-events:none;
+      opacity: 0.9;
+      z-index: 1;
+    }
+
+    /* silhouette layer: stronger + placed */
+    .silhouette{
+      position:absolute;
+      right: 4%;
+      bottom: -10%;
+      width: 92%;
+      height: 62%;
+      opacity: 0.28;           /* overall strength */
+      z-index: 0;
+      pointer-events:none;
+    }
+    .silhouette svg{
+      width: 100%;
+      height: 100%;
+      display:block;
+    }
+
+    /* subtle bottom fade so text stays readable */
+    .shade{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      height: 55%;
+      background: linear-gradient(to top,
+        rgba(0,0,0,0.45),
+        rgba(0,0,0,0.18),
+        rgba(0,0,0,0.0)
+      );
+      z-index: 1;
+      pointer-events:none;
+    }
+
+    .top, .mid{ position:relative; z-index: 2; }
+
+    .top{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .topRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .topMeta{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      flex-wrap: wrap;
+    }
+
+    .city{
+      font-size: var(--city);
+      font-weight: 900;
+      letter-spacing: 0.4px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      text-shadow: 0 10px 24px rgba(0,0,0,0.45);
+      line-height:1.15;
+    }
+    .city span:last-child{ color: #ffd84a; }
+
+    .badge{
+      font-size: clamp(26px, 2.6vw, 42px);
+      line-height:1;
+      text-shadow: 0 10px 18px rgba(0,0,0,0.45);
+    }
+
+    .pill{
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.22);
+      white-space: nowrap;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      color: var(--muted);
+      font-size: var(--meta);
+      font-variant-numeric: tabular-nums;
+      font-weight: 900;
+    }
+
+    .sunmoon{
+      width: 22px; height: 22px;
+      display:inline-grid;
+      place-items:center;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .wxTop{
+      font-size: clamp(16px, 1.4vw, 22px);
+      padding: 10px 14px;
+      gap: 10px;
+    }
+    .datePill{
+      padding: 10px 14px;
+      font-size: clamp(14px, 1.2vw, 20px);
+    }
+    .wxIcon{ font-size: 1.25em; }
+    .wxTemp{ font-weight: 950; color: rgba(255,255,255,0.94); }
+    .wxNote{ color: rgba(255,255,255,0.78); font-weight: 850; }
+
+    /* CLOCK: center it (fixes “clock at bottom”) */
+    .mid{
+      flex: 1;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      margin-top: 8px;
+      padding-bottom: 4vh; /* slight lift so it feels premium */
+    }
+
+    .row{
+      display:flex;
+      align-items:flex-end;
+      gap: var(--gap);
+      flex-wrap: nowrap;
+    }
+
+    .ampm{
+      font-size: clamp(18px, 1.8vw, 26px);
+      font-weight: 900;
+      letter-spacing: 2px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.86);
+      margin-left: 2px;
+      margin-bottom: 8px;
+      text-shadow: 0 8px 16px rgba(0,0,0,0.45);
+    }
+
+    .colon{
+      width: var(--colon-w);
+      text-align:center;
+      font-weight: 900;
+      font-size: calc(var(--d-h) * 0.62);
+      line-height:1;
+      opacity: 0.92;
+      text-shadow: 0 16px 26px rgba(0,0,0,0.55);
+      transform: translateY(-8px);
+    }
+    .colon.blink{ animation: blink 1s steps(1,end) infinite; }
+    @keyframes blink{ 50%{ opacity:0.35; } }
+
+    /* Slide digit: keep, but no fancy filters */
+    .digitBox{
+      width: var(--d-w);
+      height: var(--d-h);
+      border-radius: 14px;
+      overflow:hidden;
+      position:relative;
+      background: rgba(0,0,0,0.72);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 12px 22px rgba(0,0,0,0.45);
+    }
+    .digitBox::after{
+      content:"";
+      position:absolute; left:-2px; right:-2px;
+      top:50%;
+      height:3px;
+      background: rgba(0,0,0,0.78);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        inset 0 -1px 0 rgba(0,0,0,0.50);
+      z-index:3;
+    }
+    .stack{
+      position:absolute;
+      left:0; top:0;
+      width:100%;
+      will-change: transform;
+      transform: translate3d(0,0,0);
+      transition: transform 220ms cubic-bezier(.2,.9,.2,1);
+    }
+    .cell{
+      height: var(--d-h);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 1px;
+      font-size: calc(var(--d-h) * 0.72);
+      line-height:1;
+      -webkit-font-smoothing: antialiased;
+      color: rgba(255,255,255,0.92);
+      text-shadow: 0 16px 28px rgba(0,0,0,0.60);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.38));
+    }
+
+    /* 24h time (yellow) */
+    .time24{
+      margin-top: 14px;
+      color: #ffd84a;
+      font-size: clamp(28px, 2.8vw, 52px);
+      font-weight: 950;
+      letter-spacing: 0.8px;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 14px 26px rgba(0,0,0,0.55);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <main class="grid" id="grid"></main>
+  </div>
+
+  <script>
+    const WEATHER_REFRESH_MS = 15 * 60 * 1000;
+
+    // Rotation settings
+    const PAGE_SIZE = 3;       // show 3 clocks at a time
+    const ROTATE_MS = 15000;   // rotate every 15 seconds
+    let pageIndex = 0;
+
+    const CLOCKS = [
+      { label: "Providenciales", tz: "America/Grand_Turk", flag:"🇹🇨", accent:"120,190,255", lat:21.6940, lon:-71.7979, silhouette:"provo" },
+      { label: "Miami", tz: "America/New_York", flag:"🇺🇸", accent:"255,120,170", lat:25.7617, lon:-80.1918, silhouette:"miami" },
+      { label: "Houston", tz: "America/Chicago", flag:"🇺🇸", accent:"140,255,190", lat:29.7604, lon:-95.3698, silhouette:"houston" },
+      { label: "Manila", tz: "Asia/Manila", flag:"🇵🇭", accent:"120,255,230", lat:14.5995, lon:120.9842, silhouette:"manila" },
+      { label: "Santiago", tz: "America/Santo_Domingo", flag:"🇩🇴", accent:"255,190,120", lat:19.4517, lon:-70.6970, silhouette:"santiago" },
+      { label: "London", tz: "Europe/London", flag:"🇬🇧", accent:"170,150,255", lat:51.5072, lon:-0.1276, silhouette:"london" },
+      { label: "Toronto", tz: "America/Toronto", flag:"🇨🇦", accent:"200,60,60", lat:43.6532, lon:-79.3832, silhouette:"toronto" },
+      { label: "Kingston", tz: "America/Jamaica", flag:"🇯🇲", accent:"255,120,120", lat:17.9712, lon:-76.7936, silhouette:"kingston" },
+      { label: "Dubai", tz: "Asia/Dubai", flag:"🇦🇪", accent:"255,180,80", lat:25.2048, lon:55.2708, silhouette:"dubai" },
+    ];
+
+    const grid = document.getElementById("grid");
+    const digitState = new Map();   // key: tz|pos -> current digit
+    const cardCache = new Map();    // key: tz|label -> { dateEl, tzEl, sunEl, ampmEl, t24El, wxEl }
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, s => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+      }[s]));
+    }
+
+    // --- silhouettes (stronger)
+    const SILHOUETTES = {
+      toronto: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+          <g fill="white" opacity="0.60">
+            <rect x="0" y="520" width="1200" height="80"/>
+            <rect x="560" y="130" width="16" height="390" rx="8"/>
+            <rect x="540" y="230" width="56" height="16" rx="8"/>
+            <polygon points="568,70 590,130 546,130"/>
+            <rect x="566" y="40" width="4" height="40"/>
+            <rect x="240" y="360" width="70" height="160" rx="10"/>
+            <rect x="330" y="300" width="90" height="220" rx="12"/>
+            <rect x="430" y="380" width="90" height="140" rx="12"/>
+            <rect x="650" y="340" width="120" height="180" rx="14"/>
+            <rect x="790" y="390" width="90" height="130" rx="12"/>
+            <rect x="900" y="320" width="70" height="200" rx="12"/>
+          </g>
+        </svg>
+      `,
+      london: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+          <g fill="white" opacity="0.60">
+            <rect x="0" y="520" width="1200" height="80"/>
+            <rect x="820" y="180" width="90" height="340" rx="14"/>
+            <rect x="808" y="150" width="114" height="40" rx="14"/>
+            <rect x="835" y="110" width="60" height="50" rx="12"/>
+            <polygon points="865,70 910,110 820,110"/>
+            <circle cx="865" cy="260" r="34" fill="none" stroke="white" stroke-width="14" opacity="0.60"/>
+            <rect x="260" y="360" width="120" height="160" rx="14"/>
+            <rect x="400" y="330" width="140" height="190" rx="14"/>
+            <rect x="560" y="390" width="160" height="130" rx="14"/>
+          </g>
+        </svg>
+      `,
+      dubai: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+          <g fill="white" opacity="0.60">
+            <rect x="0" y="520" width="1200" height="80"/>
+            <polygon points="820,520 900,520 880,180 870,120 860,80 850,120 840,180" />
+            <rect x="858" y="40" width="6" height="60"/>
+            <rect x="640" y="360" width="90" height="160" rx="12"/>
+            <rect x="740" y="310" width="70" height="210" rx="12"/>
+            <rect x="930" y="350" width="120" height="170" rx="14"/>
+          </g>
+        </svg>
+      `,
+      miami: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+          <g fill="white" opacity="0.60">
+            <rect x="0" y="520" width="1200" height="80"/>
+            <rect x="940" y="240" width="20" height="280" rx="10"/>
+            <path d="M950 240 C880 220, 850 180, 870 150 C900 160, 930 190, 970 210 Z" />
+            <path d="M950 240 C1020 220, 1050 180, 1030 150 C1000 160, 970 190, 930 210 Z" />
+            <path d="M950 260 C900 270, 860 250, 840 220 C880 215, 910 235, 950 240 Z" />
+            <path d="M950 260 C1000 270, 1040 250, 1060 220 C1020 215, 990 235, 950 240 Z" />
+            <rect x="640" y="360" width="140" height="160" rx="20"/>
+            <rect x="800" y="330" width="120" height="190" rx="20"/>
+          </g>
+        </svg>
+      `,
+      houston: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+          <g fill="white" opacity="0.60">
+            <rect x="0" y="520" width="1200" height="80"/>
+            <rect x="700" y="340" width="120" height="180" rx="14"/>
+            <rect x="840" y="300" width="90" height="220" rx="14"/>
+            <rect x="940" y="380" width="120" height="140" rx="14"/>
+            <rect x="600" y="380" width="80" height="140" rx="14"/>
+            <polygon points="520,520 560,520 540,370" />
+            <rect x="534" y="340" width="12" height="30" rx="6"/>
+          </g>
+        </svg>
+      `,
+      manila: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+          <g fill="white" opacity="0.60">
+            <rect x="0" y="520" width="1200" height="80"/>
+            <rect x="840" y="340" width="120" height="180" rx="14"/>
+            <rect x="700" y="380" width="120" height="140" rx="14"/>
+            <rect x="620" y="330" width="70" height="190" rx="14"/>
+            <rect x="520" y="420" width="40" height="100" rx="10"/>
+            <polygon points="540,320 580,420 500,420" />
+          </g>
+        </svg>
+      `,
+      santiago: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+          <g fill="white" opacity="0.60">
+            <rect x="0" y="520" width="1200" height="80"/>
+            <rect x="760" y="360" width="220" height="160" rx="18"/>
+            <rect x="790" y="320" width="60" height="200" rx="14"/>
+            <rect x="890" y="320" width="60" height="200" rx="14"/>
+            <polygon points="870,280 980,360 760,360"/>
+            <rect x="860" y="250" width="20" height="40" rx="10"/>
+          </g>
+        </svg>
+      `,
+      kingston: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+          <g fill="white" opacity="0.60">
+            <rect x="0" y="520" width="1200" height="80"/>
+            <path d="M520 520 L650 360 L780 520 Z" />
+            <path d="M660 520 L780 420 L900 520 Z" opacity="0.45"/>
+            <rect x="980" y="300" width="18" height="220" rx="9"/>
+            <path d="M989 300 C940 290, 910 260, 920 230 C950 240, 970 265, 1005 280 Z" />
+            <path d="M989 300 C1038 290, 1068 260, 1058 230 C1028 240, 1008 265, 973 280 Z" />
+          </g>
+        </svg>
+      `,
+      provo: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+          <g fill="white" opacity="0.60">
+            <rect x="0" y="520" width="1200" height="80"/>
+            <path d="M520 470 C620 420, 720 520, 820 470 C920 420, 1020 520, 1120 470 L1120 520 L520 520 Z" opacity="0.45"/>
+            <rect x="980" y="260" width="18" height="260" rx="9"/>
+            <path d="M989 260 C930 250, 900 210, 910 180 C940 190, 965 220, 1002 235 Z" />
+            <path d="M989 260 C1048 250, 1078 210, 1068 180 C1038 190, 1013 220, 976 235 Z" />
+          </g>
+        </svg>
+      `
+    };
+
+    function wxFromCode(code){
+      const map = {
+        0:["☀️","Clear"],1:["🌤️","Mostly clear"],2:["⛅","Partly cloudy"],3:["☁️","Overcast"],
+        45:["🌫️","Fog"],48:["🌫️","Rime fog"],
+        51:["🌦️","Drizzle"],53:["🌦️","Drizzle"],55:["🌦️","Drizzle"],
+        56:["🌧️","Freezing drizzle"],57:["🌧️","Freezing drizzle"],
+        61:["🌧️","Rain"],63:["🌧️","Rain"],65:["🌧️","Heavy rain"],
+        66:["🌧️","Freezing rain"],67:["🌧️","Freezing rain"],
+        71:["🌨️","Snow"],73:["🌨️","Snow"],75:["🌨️","Heavy snow"],77:["🌨️","Snow grains"],
+        80:["🌦️","Showers"],81:["🌦️","Showers"],82:["🌧️","Heavy showers"],
+        85:["🌨️","Snow showers"],86:["🌨️","Snow showers"],
+        95:["⛈️","Thunderstorm"],96:["⛈️","Thunderstorm"],99:["⛈️","Thunderstorm"]
+      };
+      return map[code] || ["🌡️","Weather"];
+    }
+
+    function time12Digits(tz){
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+      }).formatToParts(new Date());
+      const h = parts.find(p => p.type === "hour")?.value ?? "12";
+      const m = parts.find(p => p.type === "minute")?.value ?? "00";
+      const s = parts.find(p => p.type === "second")?.value ?? "00";
+      return `${h}${m}${s}`;
+    }
+
+    function fmtTime24(tz){
+      return new Intl.DateTimeFormat(undefined, {
+        timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false
+      }).format(new Date());
+    }
+
+    function fmtDate(tz){
+      return new Intl.DateTimeFormat(undefined, {
+        timeZone: tz, weekday:"short", month:"short", day:"2-digit"
+      }).format(new Date());
+    }
+
+    function ampmOnly(tz){
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz, hour:"numeric", hour12:true
+      }).formatToParts(new Date());
+      return (parts.find(p=>p.type==="dayPeriod")?.value || "").toUpperCase();
+    }
+
+    function tzShortName(tz){
+      const parts = new Intl.DateTimeFormat(undefined, {
+        timeZone: tz, timeZoneName:"short"
+      }).formatToParts(new Date());
+      return parts.find(p=>p.type==="timeZoneName")?.value || tz;
+    }
+
+    function tzHour(tz){
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz, hour:"2-digit", hour12:false
+      }).formatToParts(new Date());
+      return Number(parts.find(p=>p.type==="hour")?.value ?? "0");
+    }
+
+    function sunOrMoonEmoji(hour){
+      return (hour >= 6 && hour < 18) ? "☀️" : "🌙";
+    }
+
+    function digitTemplate(tz, pos){
+      const key = `${tz}|${pos}`;
+      digitState.set(key, 0);
+      const cells = Array.from({length:10}, (_,i)=>`<div class="cell">${i}</div>`).join("");
+      return `
+        <div class="digitBox" data-tz="${escapeHtml(tz)}" data-pos="${pos}">
+          <div class="stack" data-stack>${cells}</div>
+        </div>
+      `;
+    }
+
+    async function fetchWeather(lat, lon){
+      const url =
+        `https://api.open-meteo.com/v1/forecast` +
+        `?latitude=${encodeURIComponent(lat)}` +
+        `&longitude=${encodeURIComponent(lon)}` +
+        `&current=temperature_2m,weather_code` +
+        `&temperature_unit=fahrenheit` +
+        `&timezone=auto`;
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("Weather fetch failed");
+      const data = await res.json();
+      return { temp: data?.current?.temperature_2m, code: data?.current?.weather_code };
+    }
+
+    function setDigit(boxEl, newVal){
+      const tz = boxEl.getAttribute("data-tz");
+      const pos = boxEl.getAttribute("data-pos");
+      const key = `${tz}|${pos}`;
+      const oldVal = digitState.get(key);
+      if (oldVal === newVal) return;
+
+      const stack = boxEl.querySelector("[data-stack]");
+      const h = boxEl.getBoundingClientRect().height;
+      stack.style.transform = `translate3d(0, ${-newVal * h}px, 0)`;
+      digitState.set(key, newVal);
+    }
+
+    function buildPage(){
+      grid.innerHTML = "";
+      digitState.clear();
+      cardCache.clear();
+
+      const totalPages = Math.ceil(CLOCKS.length / PAGE_SIZE);
+      if (pageIndex >= totalPages) pageIndex = 0;
+
+      const start = pageIndex * PAGE_SIZE;
+      const slice = CLOCKS.slice(start, start + PAGE_SIZE);
+
+      for (const c of slice){
+        const tzEsc = escapeHtml(c.tz);
+        const card = document.createElement("section");
+        card.className = "card";
+        card.style.setProperty("--accent", c.accent);
+
+        // silhouette + shade layers (DOM, not CSS blend modes)
+        const sil = document.createElement("div");
+        sil.className = "silhouette";
+        sil.innerHTML = SILHOUETTES[c.silhouette] || "";
+        card.appendChild(sil);
+
+        const shade = document.createElement("div");
+        shade.className = "shade";
+        card.appendChild(shade);
+
+        card.innerHTML += `
+          <div class="top">
+            <div class="topRow">
+              <div class="city">
+                <span class="badge">${escapeHtml(c.flag || "🌐")}</span>
+                <span>${escapeHtml(c.label)}</span>
+              </div>
+
+              <div class="pill" style="opacity:.95">
+                <span class="sunmoon" data-sunmoon="${tzEsc}">⏳</span>
+                <span data-tzname="${tzEsc}">---</span>
+              </div>
+            </div>
+
+            <div class="topMeta">
+              <div class="pill datePill" data-date="${tzEsc}">---</div>
+
+              <div class="pill wxTop" data-wx>
+                <span class="wxIcon">🌡️</span>
+                <span class="wxTemp">--</span>
+                <span class="wxNote">Loading</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mid">
+            <div class="row" aria-label="12 hour clock (slide)">
+              ${digitTemplate(c.tz,0)}
+              ${digitTemplate(c.tz,1)}
+              <div class="colon blink">:</div>
+              ${digitTemplate(c.tz,2)}
+              ${digitTemplate(c.tz,3)}
+              <div class="colon blink">:</div>
+              ${digitTemplate(c.tz,4)}
+              ${digitTemplate(c.tz,5)}
+              <div class="ampm" data-ampm="${tzEsc}">--</div>
+            </div>
+
+            <div class="time24" data-tz24="${tzEsc}">--:--</div>
+          </div>
+        `;
+
+        // cache pointers (avoid querySelectorAll spam every second)
+        const cacheKey = `${c.tz}|${c.label}`;
+        cardCache.set(cacheKey, {
+          tz: c.tz,
+          label: c.label,
+          lat: c.lat,
+          lon: c.lon,
+          ampmEl: card.querySelector("[data-ampm]"),
+          t24El: card.querySelector("[data-tz24]"),
+          dateEl: card.querySelector("[data-date]"),
+          tzEl: card.querySelector("[data-tzname]"),
+          sunEl: card.querySelector("[data-sunmoon]"),
+          wxEl: card.querySelector("[data-wx]"),
+        });
+
+        grid.appendChild(card);
+      }
+    }
+
+    function tick(){
+      // update flip digits
+      document.querySelectorAll(".digitBox").forEach(box => {
+        const tz = box.getAttribute("data-tz");
+        const pos = Number(box.getAttribute("data-pos"));
+        const digits = time12Digits(tz);
+        const n = Number(digits[pos] || "0");
+        setDigit(box, n);
+      });
+
+      // update cached text nodes
+      for (const c of cardCache.values()){
+        c.ampmEl.textContent = ampmOnly(c.tz);
+        c.t24El.textContent = fmtTime24(c.tz);
+        c.dateEl.textContent = fmtDate(c.tz);
+        c.tzEl.textContent = tzShortName(c.tz);
+        c.sunEl.textContent = sunOrMoonEmoji(tzHour(c.tz));
+      }
+    }
+
+    async function refreshVisibleWeather(){
+      const tasks = [];
+      for (const c of cardCache.values()){
+        tasks.push((async () => {
+          try{
+            const wx = await fetchWeather(c.lat, c.lon);
+            const [icon, labelText] = wxFromCode(wx.code);
+            const t = (typeof wx.temp === "number") ? Math.round(wx.temp) : null;
+            c.wxEl.innerHTML = `
+              <span class="wxIcon">${icon}</span>
+              <span class="wxTemp">${t !== null ? `${t}°F` : "--"}</span>
+              <span class="wxNote">${escapeHtml(labelText)}</span>
+            `;
+          } catch {
+            c.wxEl.innerHTML = `
+              <span class="wxIcon">🌡️</span>
+              <span class="wxTemp">--</span>
+              <span class="wxNote">Weather</span>
+            `;
+          }
+        })());
+      }
+      await Promise.allSettled(tasks);
+    }
+
+    function startRotation(){
+      setInterval(() => {
+        grid.classList.add("fading");
+        setTimeout(() => {
+          pageIndex++;
+          buildPage();
+          tick();
+          refreshVisibleWeather();
+          grid.classList.remove("fading");
+        }, 280);
+      }, ROTATE_MS);
+    }
+
+    // Start
+    buildPage();
+    tick();
+    setInterval(tick, 1000);
+
+    refreshVisibleWeather();
+    setInterval(refreshVisibleWeather, WEATHER_REFRESH_MS);
+
+    startRotation();
+
+    window.addEventListener("resize", (() => {
+      let t;
+      return () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          buildPage();
+          tick();
+          refreshVisibleWeather();
+        }, 200);
+      };
+    })());
+  </script>
+</body>
+</html>
