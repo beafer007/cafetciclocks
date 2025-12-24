@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pi Web Test</title>
+  <style>
+    html,body{height:100%;margin:0;font-family:system-ui,Arial;}
+    body{display:grid;place-items:center;background:#111;color:#0f0}
+    .box{font-size:48px;font-weight:800;letter-spacing:1px}
+    .sub{font-size:18px;color:#9f9;margin-top:10px;text-align:center}
+  </style>
+</head>
+<body>
+  <div>
+    <div class="box" id="t">--:--:--</div>
+    <div class="sub">If you can see this, webpages render on this player.</div>
+  </div>
+  <script>
+    setInterval(() => {
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      const ss = String(d.getSeconds()).padStart(2,'0');
+      document.getElementById('t').textContent = `${hh}:${mm}:${ss}`;
+    }, 250);
+  </script>
+</body>
+</html>
