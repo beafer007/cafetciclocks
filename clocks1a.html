@@ -1,232 +1,201 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
-<meta http-equiv="refresh" content="21600">
-<title>Clocks - Page 1</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World Clocks – Bright</title>
 
 <style>
-:root{
-  --bg0:#070a0f;
-  --bg1:#0a1220;
-  --text: rgba(255,255,255,0.92);
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#fff}
 
-  --pad: clamp(14px, 2vw, 28px);
-  --radius: 26px;
-
-  --city: clamp(22px, 2.4vw, 42px);
-  --tz: clamp(16px, 1.7vw, 26px);
-
-  --time: clamp(84px, 7.4vw, 150px);
-  --time24: clamp(18px, 1.9vw, 30px);
-  --date: clamp(20px, 1.9vw, 34px);
-
-  /* ⬆️ slightly bigger weather */
-  --wx: clamp(18px, 1.7vw, 30px);
-}
-
-*{ box-sizing:border-box; }
-html,body{ height:100%; margin:0; }
-
-body{
-  background:
-    radial-gradient(900px 600px at 18% 10%, rgba(120,170,255,0.14), transparent 55%),
-    radial-gradient(900px 600px at 85% 85%, rgba(255,120,210,0.10), transparent 55%),
-    linear-gradient(160deg, var(--bg0), var(--bg1));
-  color: var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  overflow:hidden;
-}
-
-.wrap{
-  height:100%;
-  padding: var(--pad);
+.wrapper{
   display:grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--pad);
+  grid-template-columns:repeat(3,1fr);
+  height:100vh;
+  gap:14px;
+  padding:14px;
 }
 
+/* CARD */
 .card{
   position:relative;
-  border-radius: var(--radius);
+  border-radius:26px;
   overflow:hidden;
-  padding: var(--pad);
-  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 18px 44px rgba(0,0,0,0.48);
+  box-shadow:0 24px 60px rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.18);
 }
 
-.card::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background: var(--flag);
-  opacity: 1;                     /* FULL opacity */
-  mix-blend-mode: normal;         /* NO soft-light */
-  filter:
-    saturate(1.6)
-    brightness(1.15)
-    contrast(1.15);
-}
+/* FLAG BACKGROUNDS (BRIGHT, VERTICAL) */
+.miami{background:linear-gradient(90deg,#c81d25 0%,#c81d25 33%,#f1f1f1 33%,#f1f1f1 66%,#233e99 66%)}
+.london{background:linear-gradient(90deg,#00247d 0%,#00247d 33%,#f1f1f1 33%,#f1f1f1 66%,#cf142b 66%)}
+.dubai{background:linear-gradient(90deg,#00732f 0%,#00732f 25%,#ffffff 25%,#ffffff 55%,#000000 55%,#000000 75%,#ce1126 75%)}
 
-.card::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(
-      1200px 700px at 50% 50%,
-      rgba(0,0,0,0.10),
-      rgba(0,0,0,0.35)
-    );
-}
-
+/* TOP LABEL */
 .top{
-  position:relative;
+  position:absolute;
+  top:18px;
+  left:20px;
+  right:20px;
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
-  z-index:2;
-}
-
-.city{
-  font-size: var(--city);
-  font-weight: 950;
-}
-
-.pill{
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(0,0,0,0.25);
-  border: 1px solid rgba(255,255,255,0.12);
-  font-size: var(--tz);
-  font-weight: 900;
-}
-
-.center{
-  position:relative;
-  z-index:2;
-  height: calc(100% - 70px);
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
   align-items:center;
-  text-align:center;
+  font-weight:900;
+  font-size:22px;
+  text-shadow:0 4px 12px rgba(0,0,0,.6);
 }
 
-.time{
-  font-size: var(--time);
-  font-weight: 1000;
-  line-height:1;
+.tz{
+  padding:6px 12px;
+  border-radius:999px;
+  background:rgba(0,0,0,.55);
+  font-size:14px;
+  font-weight:800;
+}
+
+/* CENTER GLASS PLATE */
+.centerPlate{
+  position:absolute;
+  left:50%;
+  top:56%;
+  transform:translate(-50%,-50%);
+  width:min(92%,520px);
+  text-align:center;
+  padding:26px 24px 22px;
+  border-radius:26px;
+  background:rgba(0,0,0,.42);
+  border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(8px);
+}
+
+/* TIME */
+.time12{
+  font-size:clamp(96px,8vw,150px);
+  font-weight:950;
+  letter-spacing:.5px;
+  line-height:.95;
 }
 
 .time24{
-  font-size: var(--time24);
-  letter-spacing: 3px;
-  opacity:0.85;
+  margin-top:10px;
+  font-size:clamp(22px,1.6vw,34px);
+  font-weight:900;
+  letter-spacing:1.4px;
+  opacity:.85;
 }
 
+/* DATE */
 .date{
-  font-size: var(--date);
-  font-weight: 950;
-  margin-top: 6px;
+  margin-top:12px;
+  font-size:clamp(26px,2vw,38px);
+  font-weight:900;
 }
 
-.wx{
-  font-size: var(--wx);
-  font-weight: 900;
-  margin-top: 10px; /* 👈 moved down */
+/* WEATHER */
+.weather{
+  margin-top:18px;
+  font-size:clamp(22px,1.7vw,34px);
+  font-weight:900;
+  opacity:.95;
   line-height:1.35;
 }
-.wx small{
-  opacity:0.8;
-  font-weight:850;
-}
 
-  @media (min-width: 1200px){
-  .card::before{
-    filter:
-      saturate(1.8)
-      brightness(1.2)
-      contrast(1.2);
-  }
+/* SMALL SCREENS */
+@media(max-width:1000px){
+  .wrapper{grid-template-columns:1fr}
 }
 </style>
 </head>
 
 <body>
-<main class="wrap" id="wrap"></main>
+<div class="wrapper">
+
+  <!-- MIAMI -->
+  <div class="card miami" data-tz="America/New_York" data-lat="25.7617" data-lon="-80.1918">
+    <div class="top">
+      <div>🇺🇸 Miami</div>
+      <div class="tz">EST</div>
+    </div>
+    <div class="centerPlate">
+      <div class="time12"></div>
+      <div class="time24"></div>
+      <div class="date"></div>
+      <div class="weather"></div>
+    </div>
+  </div>
+
+  <!-- LONDON -->
+  <div class="card london" data-tz="Europe/London" data-lat="51.5072" data-lon="-0.1276">
+    <div class="top">
+      <div>🇬🇧 London</div>
+      <div class="tz">GMT</div>
+    </div>
+    <div class="centerPlate">
+      <div class="time12"></div>
+      <div class="time24"></div>
+      <div class="date"></div>
+      <div class="weather"></div>
+    </div>
+  </div>
+
+  <!-- DUBAI -->
+  <div class="card dubai" data-tz="Asia/Dubai" data-lat="25.2048" data-lon="55.2708">
+    <div class="top">
+      <div>🇦🇪 Dubai</div>
+      <div class="tz">GMT+4</div>
+    </div>
+    <div class="centerPlate">
+      <div class="time12"></div>
+      <div class="time24"></div>
+      <div class="date"></div>
+      <div class="weather"></div>
+    </div>
+  </div>
+
+</div>
 
 <script>
-const CITIES=[
-  {label:"Miami",tz:"America/New_York",flag:"🇺🇸",lat:25.7617,lon:-80.1918,colors:["#b22234","#ffffff","#3c3b6e"]},
-  {label:"London",tz:"Europe/London",flag:"🇬🇧",lat:51.5072,lon:-0.1276,colors:["#012169","#ffffff","#c8102e"]},
-  {label:"Dubai",tz:"Asia/Dubai",flag:"🇦🇪",lat:25.2048,lon:55.2708,colors:["#00732f","#ffffff","#000","#ff0000"]}
-];
+function updateClocks(){
+  document.querySelectorAll(".card").forEach(card=>{
+    const tz=card.dataset.tz;
+    const now=new Date();
 
-function flagGradient(colors){
-  const n = colors.length;
-  return `linear-gradient(90deg, ${
-    colors.map((c,i)=>`${c} ${(i*100/n)}%, ${c} ${((i+1)*100/n)}%`).join(",")
-  })`;
+    const t12=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"numeric",minute:"2-digit",second:"2-digit",hour12:true}).format(now);
+    const t24=new Intl.DateTimeFormat("en-GB",{timeZone:tz,hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(now);
+    const date=new Intl.DateTimeFormat("en-US",{timeZone:tz,weekday:"short",month:"short",day:"2-digit"}).format(now);
+
+    card.querySelector(".time12").textContent=t12;
+    card.querySelector(".time24").textContent=t24;
+    card.querySelector(".date").textContent=date;
+  });
 }
+setInterval(updateClocks,1000);
+updateClocks();
 
-function fmt12(tz){return new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"2-digit",minute:"2-digit",hour12:true}).format(new Date());}
-function fmt24(tz){return new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).format(new Date());}
-function fmtDate(tz){return new Intl.DateTimeFormat("en-US",{timeZone:tz,weekday:"short",month:"short",day:"2-digit"}).format(new Date());}
-
-async function weather(lat,lon){
-  const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto`);
-  const d=await r.json();
-  return {
-    nowF:Math.round(d.current.temperature_2m),
-    hiF:Math.round(d.daily.temperature_2m_max[1]),
-    loF:Math.round(d.daily.temperature_2m_min[1])
-  };
+/* WEATHER */
+async function loadWeather(){
+  document.querySelectorAll(".card").forEach(async card=>{
+    const lat=card.dataset.lat;
+    const lon=card.dataset.lon;
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto`;
+    try{
+      const r=await fetch(url);
+      const d=await r.json();
+      const f=Math.round(d.current.temperature_2m);
+      const c=Math.round((f-32)*5/9);
+      const hiF=Math.round(d.daily.temperature_2m_max[1]);
+      const loF=Math.round(d.daily.temperature_2m_min[1]);
+      const hiC=Math.round((hiF-32)*5/9);
+      const loC=Math.round((loF-32)*5/9);
+      card.querySelector(".weather").textContent=
+        `${f}°F / ${c}°C • Tomorrow ${hiF}/${loF}°F (${hiC}/${loC}°C)`;
+    }catch(e){
+      card.querySelector(".weather").textContent="Weather unavailable";
+    }
+  });
 }
-
-const wrap=document.getElementById("wrap");
-
-async function build(){
-  wrap.innerHTML="";
-  for(const c of CITIES){
-    const w=await weather(c.lat,c.lon);
-    const nowC=Math.round((w.nowF-32)*5/9);
-    const hiC=Math.round((w.hiF-32)*5/9);
-    const loC=Math.round((w.loF-32)*5/9);
-
-    const card=document.createElement("section");
-    card.className="card";
-    card.style.setProperty("--flag",flagGradient(c.colors));
-
-    card.innerHTML=`
-      <div class="top">
-        <div class="city">${c.flag} ${c.label}</div>
-        <div class="pill">${c.tz.split("/")[1]}</div>
-      </div>
-      <div class="center">
-        <div class="time" data-tz="${c.tz}"></div>
-        <div class="time24" data-tz24="${c.tz}"></div>
-        <div class="date" data-date="${c.tz}"></div>
-        <div class="wx">${w.nowF}°F / ${nowC}°C • Tomorrow ${w.hiF}/${w.loF}°F (${hiC}/${loC}°C)</div>
-      </div>`;
-    wrap.appendChild(card);
-  }
-}
-
-function tick(){
-  document.querySelectorAll("[data-tz]").forEach(e=>e.textContent=fmt12(e.dataset.tz));
-  document.querySelectorAll("[data-tz24]").forEach(e=>e.textContent=fmt24(e.dataset.tz24));
-  document.querySelectorAll("[data-date]").forEach(e=>e.textContent=fmtDate(e.dataset.date));
-}
-
-build();
-tick();
-setInterval(tick,1000);
+loadWeather();
+setInterval(loadWeather,15*60*1000);
 </script>
 </body>
 </html>
