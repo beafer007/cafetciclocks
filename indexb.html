@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta http-equiv="refresh" content="21600">
+  <title>City Clocks (Lite, Rotate 3)</title>
+
+  <style>
+    :root{
+      --bg0:#070a0f;
+      --bg1:#0a1220;
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+
+      --pad: clamp(14px, 2vw, 26px);
+      --radius: 22px;
+
+      --city: clamp(18px, 2.2vw, 34px);
+      --big:  clamp(58px, 6.8vw, 110px);
+      --small: clamp(22px, 2.4vw, 44px);
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; margin:0; }
+    body{
+      background:
+        radial-gradient(900px 600px at 15% 15%, rgba(120,170,255,0.14), transparent 55%),
+        radial-gradient(900px 600px at 85% 85%, rgba(255,120,210,0.10), transparent 55%),
+        linear-gradient(160deg, var(--bg0), var(--bg1));
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      overflow:hidden;
+    }
+
+    .wrap{
+      height:100%;
+      padding:var(--pad);
+    }
+
+    .grid{
+      height:100%;
+      display:grid;
+      gap: var(--pad);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      transition: opacity 260ms ease;
+    }
+    .grid.fading{ opacity:0; }
+
+    @media (max-width: 1150px){
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    .card{
+      position:relative;
+      border-radius: var(--radius);
+      padding: calc(var(--pad) * 0.95);
+      overflow:hidden;
+
+      background:
+        radial-gradient(800px 240px at 20% 0%, rgba(var(--accent),0.18), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.40);
+    }
+
+    /* light “flag wash” overlay (very cheap to render) */
+    .card::before{
+      content:"";
+      position:absolute; inset:0;
+      opacity:0.22;
+      background: linear-gradient(135deg, var(--flagA), var(--flagB));
+      pointer-events:none;
+    }
+
+    .content{
+      position:relative;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap: 12px;
+    }
+
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+    }
+
+    .city{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size: var(--city);
+      font-weight: 900;
+      line-height:1.1;
+      text-shadow: 0 10px 24px rgba(0,0,0,0.45);
+    }
+    .city .name{ color:#ffd84a; }
+
+    .meta{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:8px;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: clamp(14px, 1.4vw, 22px);
+      white-space:nowrap;
+    }
+
+    .pill{
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.18);
+      padding: 8px 12px;
+      border-radius: 999px;
+    }
+
+    .timeBig{
+      font-size: var(--big);
+      font-weight: 950;
+      letter-spacing: 2px;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 18px 40px rgba(0,0,0,0.55);
+    }
+
+    .timeSmall{
+      margin-top: 6px;
+      font-size: var(--small);
+      font-weight: 950;
+      letter-spacing: 1px;
+      color:#ffd84a;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 14px 26px rgba(0,0,0,0.55);
+    }
+
+    .footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: clamp(14px, 1.3vw, 20px);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <main class="grid" id="grid"></main>
+  </div>
+
+  <script>
+    // ===== Settings =====
+    const PAGE_SIZE = 3;
+    const ROTATE_MS = 15000;
+
+    // Weather OFF by default for max compatibility/speed.
+    const WEATHER_ENABLED = false;
+    const WEATHER_REFRESH_MS = 15 * 60 * 1000;
+
+    // ===== Clock data =====
+    // For old/limited webviews: use "rules-based offsets" rather than Intl timeZone.
+    // We’ll compute UTC, then apply offsets + DST rules per region.
+
+    const CLOCKS = [
+      { label:"Providenciales", flag:"🇹🇨", zone:"TC",  accent:"120,190,255", flagA:"#00a3e0", flagB:"#012169", lat:21.6940, lon:-71.7979 },
+      { label:"Miami",          flag:"🇺🇸", zone:"US_E",accent:"255,120,170", flagA:"#b22234", flagB:"#3c3b6e", lat:25.7617, lon:-80.1918 },
+      { label:"Houston",        flag:"🇺🇸", zone:"US_C",accent:"140,255,190", flagA:"#b22234", flagB:"#3c3b6e", lat:29.7604, lon:-95.3698 },
+      { label:"Manila",         flag:"🇵🇭", zone:"PH",  accent:"120,255,230", flagA:"#0038a8", flagB:"#ce1126", lat:14.5995, lon:120.9842 },
+      { label:"Santiago",       flag:"🇩🇴", zone:"DR",  accent:"255,190,120", flagA:"#002d62", flagB:"#ce1126", lat:19.4517, lon:-70.6970 },
+      { label:"London",         flag:"🇬🇧", zone:"UK",  accent:"170,150,255", flagA:"#012169", flagB:"#c8102e", lat:51.5072, lon:-0.1276 },
+      { label:"Toronto",        flag:"🇨🇦", zone:"CA_E",accent:"200,60,60",  flagA:"#d80621", flagB:"#ffffff", lat:43.6532, lon:-79.3832 },
+      { label:"Kingston",       flag:"🇯🇲", zone:"JM",  accent:"255,120,120",flagA:"#009b3a", flagB:"#000000", lat:17.9712, lon:-76.7936 },
+      { label:"Dubai",          flag:"🇦🇪", zone:"AE",  accent:"255,180,80", flagA:"#00732f", flagB:"#ce1126", lat:25.2048, lon:55.2708 },
+    ];
+
+    // ===== Utilities =====
+    const grid = document.getElementById("grid");
+    let pageIndex = 0;
+
+    function pad2(n){ return (n < 10 ? "0" : "") + n; }
+
+    function formatDate(d){
+      const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      return `${days[d.getDay()]}, ${months[d.getMonth()]} ${pad2(d.getDate())}`;
+    }
+
+    function isLeapYear(y){ return (y%4===0 && y%100!==0) || (y%400===0); }
+
+    // --- DST rules (simple + reliable) ---
+    // US/Canada (Eastern/Central): DST = 2nd Sunday in March to 1st Sunday in November
+    function usDstActive(utcDate){
+      const y = utcDate.getUTCFullYear();
+
+      function nthSunday(monthIndex, nth){
+        // monthIndex: 0-11, returns day-of-month for nth Sunday
+        const first = new Date(Date.UTC(y, monthIndex, 1));
+        const firstDow = first.getUTCDay(); // 0=Sun
+        const firstSundayDom = 1 + ((7 - firstDow) % 7);
+        return firstSundayDom + (nth-1)*7;
+      }
+      const marchSecondSunday = nthSunday(2, 2); // March
+      const novFirstSunday   = nthSunday(10, 1); // Nov
+
+      const start = Date.UTC(y, 2, marchSecondSunday, 7, 0, 0); // 2am local ~ 7am UTC (approx ok)
+      const end   = Date.UTC(y,10, novFirstSunday,   6, 0, 0); // 2am local ~ 6am UTC
+      const t = utcDate.getTime();
+      return t >= start && t < end;
+    }
+
+    // UK: DST (BST) = last Sunday in March to last Sunday in October
+    function ukDstActive(utcDate){
+      const y = utcDate.getUTCFullYear();
+
+      function lastSunday(monthIndex){
+        // last day of month
+        const last = new Date(Date.UTC(y, monthIndex+1, 0));
+        const dow = last.getUTCDay();
+        const dom = last.getUTCDate() - dow; // step back to Sunday
+        return dom;
+      }
+      const marchLastSunday = lastSunday(2);
+      const octLastSunday   = lastSunday(9);
+
+      const start = Date.UTC(y, 2, marchLastSunday, 1, 0, 0); // 1:00 UTC
+      const end   = Date.UTC(y, 9, octLastSunday,   1, 0, 0); // 1:00 UTC
+      const t = utcDate.getTime();
+      return t >= start && t < end;
+    }
+
+    // Zone base offsets (in minutes) WITHOUT DST
+    const ZONE_BASE_MIN = {
+      TC:   -5*60,     // Turks and Caicos (often aligns with ET; we’ll apply US DST)
+      US_E: -5*60,     // Eastern
+      CA_E: -5*60,     // Eastern
+      DR:   -4*60,     // Dominican Republic (no DST)
+      JM:   -5*60,     // Jamaica (no DST)
+      US_C: -6*60,     // Central
+      UK:    0,
+      AE:    4*60,     // Dubai
+      PH:    8*60      // Manila
+    };
+
+    function zoneOffsetMinutes(zone, utcDate){
+      let base = ZONE_BASE_MIN[zone] ?? 0;
+
+      // apply DST selectively
+      if (zone === "US_E" || zone === "US_C" || zone === "CA_E" || zone === "TC"){
+        if (usDstActive(utcDate)) base += 60;
+      }
+      if (zone === "UK"){
+        if (ukDstActive(utcDate)) base += 60;
+      }
+
+      return base;
+    }
+
+    function localDateForZone(zone){
+      const now = new Date();
+      const utc = new Date(now.getTime() + now.getTimezoneOffset()*60000);
+      const offMin = zoneOffsetMinutes(zone, utc);
+      return new Date(utc.getTime() + offMin*60000);
+    }
+
+    function formatTime24(d){
+      return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+    }
+    function formatTime12(d){
+      let h = d.getHours();
+      const m = pad2(d.getMinutes());
+      const s = pad2(d.getSeconds());
+      const ap = h >= 12 ? "PM" : "AM";
+      h = h % 12; if (h === 0) h = 12;
+      return `${pad2(h)}:${m}:${s} ${ap}`;
+    }
+
+    function tzLabel(zone, utcDate){
+      // just a friendly label; keep it simple
+      if (zone === "AE") return "GMT+4";
+      if (zone === "PH") return "GMT+8";
+      if (zone === "DR") return "AST";
+      if (zone === "JM") return "EST";
+      if (zone === "UK") return ukDstActive(utcDate) ? "BST" : "GMT";
+      if (zone === "US_C") return usDstActive(utcDate) ? "CDT" : "CST";
+      if (zone === "US_E" || zone === "CA_E" || zone === "TC") return usDstActive(utcDate) ? "EDT" : "EST";
+      return "UTC";
+    }
+
+    // ===== Render =====
+    function buildPage(){
+      grid.innerHTML = "";
+
+      const totalPages = Math.ceil(CLOCKS.length / PAGE_SIZE);
+      if (pageIndex >= totalPages) pageIndex = 0;
+
+      const start = pageIndex * PAGE_SIZE;
+      const slice = CLOCKS.slice(start, start + PAGE_SIZE);
+
+      for (const c of slice){
+        const card = document.createElement("section");
+        card.className = "card";
+        card.style.setProperty("--accent", c.accent);
+        card.style.setProperty("--flagA", c.flagA || "#ffffff");
+        card.style.setProperty("--flagB", c.flagB || "#ffffff");
+        card.dataset.zone = c.zone;
+
+        card.innerHTML = `
+          <div class="content">
+            <div class="top">
+              <div class="city">
+                <span>${c.flag || "🌐"}</span>
+                <span class="name">${c.label}</span>
+              </div>
+              <div class="meta">
+                <div class="pill"><span data-tz></span></div>
+                <div class="pill"><span data-date></span></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="timeBig" data-t24>--:--:--</div>
+              <div class="timeSmall" data-t12>--:--:-- --</div>
+            </div>
+
+            <div class="footer">
+              <span style="opacity:.8"> </span>
+              <span style="opacity:.8"></span>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    function tick(){
+      const now = new Date();
+      const utc = new Date(now.getTime() + now.getTimezoneOffset()*60000);
+
+      const cards = Array.from(document.querySelectorAll(".card"));
+      for (const card of cards){
+        const zone = card.dataset.zone;
+        const d = localDateForZone(zone);
+
+        const tz = tzLabel(zone, utc);
+        card.querySelector("[data-tz]").textContent = tz;
+        card.querySelector("[data-date]").textContent = formatDate(d);
+        card.querySelector("[data-t24]").textContent = formatTime24(d);
+        card.querySelector("[data-t12]").textContent = formatTime12(d);
+      }
+    }
+
+    function startRotation(){
+      setInterval(() => {
+        grid.classList.add("fading");
+        setTimeout(() => {
+          pageIndex++;
+          buildPage();
+          tick();
+          grid.classList.remove("fading");
+        }, 280);
+      }, ROTATE_MS);
+    }
+
+    // Start
+    buildPage();
+    tick();
+    setInterval(tick, 1000);
+    startRotation();
+  </script>
+</body>
+</html>
