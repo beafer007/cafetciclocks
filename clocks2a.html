@@ -1,171 +1,192 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>World Clocks – Page 2</title>
+<meta charset="UTF-8" />
+<title>World Clocks – Set 2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
 :root{
-  --city: clamp(72px, 6vw, 110px);
-  --time: clamp(120px, 10vw, 170px);
-  --glass: rgba(30,30,40,.55);
+  --citySize:110px;
 }
 
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto}
+html,body{
+  margin:0;
+  height:100%;
+  background:#000;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  color:#fff;
+}
 
 .wrapper{
-  height:100%;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
+  display:flex;
+  height:100vh;
+  gap:18px;
+  padding:18px;
 }
 
 .card{
+  flex:1;
   position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  border-radius:22px;
   overflow:hidden;
 }
 
-.flag{
-  position:absolute;
-  inset:0;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-}
-.flag div{filter:saturate(1.25)}
+/* FLAG BACKGROUNDS */
+.kingston{background:linear-gradient(90deg,#1f6f43 0%,#1f6f43 33%,#f1c232 33%,#f1c232 66%,#000 66%,#000 100%)}
+.paris{background:linear-gradient(90deg,#002395 0%,#002395 33%,#fff 33%,#fff 66%,#ed2939 66%,#ed2939 100%)}
+.manila{background:linear-gradient(90deg,#0038a8 0%,#0038a8 33%,#fff 33%,#fff 66%,#ce1126 66%,#ce1126 100%)}
 
+/* GLASS PANEL */
 .glass{
-  position:relative;
-  padding:60px 80px;
-  border-radius:28px;
-  background:var(--glass);
-  backdrop-filter:blur(22px);
-  box-shadow:0 30px 70px rgba(0,0,0,.55);
+  position:absolute;
+  inset:60px;
+  background:rgba(20,20,20,.45);
+  backdrop-filter:blur(18px);
+  border-radius:22px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:40px;
   text-align:center;
-  width:100%;
-  max-width:92%;
 }
 
+/* CITY */
 .city{
-  font-size:var(--city);
-  font-weight:900;
   display:flex;
-  justify-content:center;
+  align-items:center;
   gap:18px;
+  font-weight:800;
+  font-size:var(--citySize);
   margin-bottom:18px;
 }
+.cityFlag{
+  font-size:calc(var(--citySize) * 0.8);
+}
 
+/* TIME */
 .time{
-  font-size:var(--time);
-  font-weight:950;
-  letter-spacing:2px;
+  font-size:140px;
+  font-weight:900;
+  line-height:1;
 }
-
-.blink{
-  animation:blink 1s steps(1) infinite;
-}
-@keyframes blink{50%{opacity:.25}}
-
 .ampm{
-  font-size:clamp(48px,4vw,72px);
-  margin-left:8px;
+  font-size:72px;
+  margin-left:12px;
 }
 
-.sub{
-  margin-top:8px;
+/* 24HR */
+.hr24{
+  margin-top:12px;
+  font-size:36px;
   opacity:.9;
+}
+.hr24 span{
+  opacity:.7;
   font-size:28px;
+  margin-right:8px;
 }
 
-.weather{
+/* DATE */
+.date{
+  margin-top:10px;
+  font-size:44px;
+  font-weight:700;
+}
+
+/* WEATHER */
+.weatherNow{
   margin-top:18px;
-  font-size:32px;
-  font-weight:700;
+  font-size:40px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.weatherIcon{
+  font-size:42px;
+}
+.weatherDesc{
+  margin-top:10px;
+  font-size:36px;
+  opacity:.95;
 }
 
-.small{
-  font-size:22px;
-  opacity:.85;
-}
-
-.tz{
-  position:absolute;
-  top:18px;
-  right:24px;
-  padding:6px 14px;
-  border-radius:999px;
-  background:rgba(0,0,0,.45);
-  font-weight:700;
-}
+@keyframes blink{50%{opacity:0}}
+.blink{animation:blink 1s steps(1) infinite}
 </style>
 </head>
 
 <body>
 <div class="wrapper">
 
-<!-- MIAMI -->
-<section class="card">
-  <div class="flag">
-    <div style="background:#c91f2c"></div>
-    <div style="background:#ffffff"></div>
-    <div style="background:#26408b"></div>
+  <!-- KINGSTON -->
+  <div class="card kingston">
+    <div class="glass">
+      <div class="city"><span class="cityFlag">🇯🇲</span>Kingston</div>
+      <div class="time" id="t1"></div>
+      <div class="hr24"><span>24HR</span><span id="t1_24"></span></div>
+      <div class="date" id="d1"></div>
+      <div class="weatherNow"><span class="weatherIcon">🌤</span>82°F / 28°C</div>
+      <div class="weatherDesc">Mostly clear · Tomorrow 86/78°F (30/26°C)</div>
+    </div>
   </div>
 
-  <div class="tz">EST</div>
-
-  <div class="glass">
-    <div class="city">🇺🇸 Miami</div>
-    <div class="time">12<span class="blink">:</span>52<span class="ampm">AM</span></div>
-    <div class="sub">24HR 00:52</div>
-    <div class="sub">Thursday, Dec 25</div>
-    <div class="weather">⛅ 68°F / 20°C</div>
-    <div class="small">Tomorrow 78 / 58°F (26 / 14°C)</div>
-  </div>
-</section>
-
-<!-- LONDON -->
-<section class="card">
-  <div class="flag">
-    <div style="background:#00247d"></div>
-    <div style="background:#ffffff"></div>
-    <div style="background:#cf142b"></div>
+  <!-- PARIS -->
+  <div class="card paris">
+    <div class="glass">
+      <div class="city"><span class="cityFlag">🇫🇷</span>Paris</div>
+      <div class="time" id="t2"></div>
+      <div class="hr24"><span>24HR</span><span id="t2_24"></span></div>
+      <div class="date" id="d2"></div>
+      <div class="weatherNow"><span class="weatherIcon">☁️</span>41°F / 5°C</div>
+      <div class="weatherDesc">Overcast · Tomorrow 44/36°F (7/2°C)</div>
+    </div>
   </div>
 
-  <div class="tz">GMT</div>
-
-  <div class="glass">
-    <div class="city">🇬🇧 London</div>
-    <div class="time">5<span class="blink">:</span>52<span class="ampm">AM</span></div>
-    <div class="sub">24HR 05:52</div>
-    <div class="sub">Thursday, Dec 25</div>
-    <div class="weather">☀️ 38°F / 3°C</div>
-    <div class="small">Tomorrow 43 / 39°F (6 / 4°C)</div>
+  <!-- MANILA -->
+  <div class="card manila">
+    <div class="glass">
+      <div class="city"><span class="cityFlag">🇵🇭</span>Manila</div>
+      <div class="time" id="t3"></div>
+      <div class="hr24"><span>24HR</span><span id="t3_24"></span></div>
+      <div class="date" id="d3"></div>
+      <div class="weatherNow"><span class="weatherIcon">🌦</span>86°F / 30°C</div>
+      <div class="weatherDesc">Partly cloudy · Tomorrow 88/80°F (31/27°C)</div>
+    </div>
   </div>
-</section>
-
-<!-- DUBAI -->
-<section class="card">
-  <div class="flag">
-    <div style="background:#1f7a34"></div>
-    <div style="background:#ffffff"></div>
-    <div style="background:#000000"></div>
-  </div>
-
-  <div class="tz">GMT+4</div>
-
-  <div class="glass">
-    <div class="city">🇦🇪 Dubai</div>
-    <div class="time">9<span class="blink">:</span>52<span class="ampm">AM</span></div>
-    <div class="sub">24HR 09:52</div>
-    <div class="sub">Thursday, Dec 25</div>
-    <div class="weather">☁️ 67°F / 19°C</div>
-    <div class="small">Tomorrow 75 / 64°F (24 / 18°C)</div>
-  </div>
-</section>
 
 </div>
+
+<script>
+function update(){
+  const zones=[
+    {t:"America/Jamaica",id:"1"},
+    {t:"Europe/Paris",id:"2"},
+    {t:"Asia/Manila",id:"3"}
+  ];
+
+  zones.forEach(z=>{
+    const d=new Date(new Date().toLocaleString("en-US",{timeZone:z.t}));
+
+    const h=d.getHours(),m=d.getMinutes();
+    const h12=((h+11)%12+1);
+    const ampm=h>=12?"PM":"AM";
+    const mm=String(m).padStart(2,"0");
+
+    document.getElementById("t"+z.id).innerHTML=
+      `${h12}<span class="blink">:</span>${mm}<span class="ampm">${ampm}</span>`;
+
+    document.getElementById("t"+z.id+"_24").textContent=
+      `${String(h).padStart(2,"0")}:${mm}`;
+
+    document.getElementById("d"+z.id).textContent=
+      d.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});
+  });
+}
+update();
+setInterval(update,1000);
+</script>
 </body>
 </html>
