@@ -1,254 +1,499 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>World Clocks – Bright Full Glass</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Clocks 1</title>
 
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#fff}
+  <style>
+    :root{
+      --bg0:#05070d;
+      --bg1:#070b14;
+      --glass: rgba(20, 26, 38, 0.58);
+      --glass2: rgba(10, 14, 22, 0.35);
+      --text: rgba(255,255,255,0.95);
+      --muted: rgba(255,255,255,0.82);
+      --muted2: rgba(255,255,255,0.72);
 
-.wrapper{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  height:100vh;
-  gap:14px;
-  padding:14px;
-}
+      --cardRadius: 26px;
+      --pad: clamp(18px, 2vw, 30px);
 
-/* CARD */
-.card{
-  position:relative;
-  border-radius:26px;
-  overflow:hidden;
-  box-shadow:0 24px 60px rgba(0,0,0,.55);
-  border:1px solid rgba(255,255,255,.18);
-}
+      --city: clamp(42px, 4.2vw, 74px);
+      --time: clamp(78px, 7.2vw, 132px);
+      --ampm: clamp(54px, 5.2vw, 100px);
 
-/* FLAG BACKGROUNDS (BRIGHT, VERTICAL) */
-.miami{background:linear-gradient(90deg,#c81d25 0%,#c81d25 33%,#ffffff 33%,#ffffff 66%,#233e99 66%)}
-.london{background:linear-gradient(90deg,#00247d 0%,#00247d 33%,#ffffff 33%,#ffffff 66%,#cf142b 66%)}
-.dubai{background:linear-gradient(90deg,#00732f 0%,#00732f 25%,#ffffff 25%,#ffffff 55%,#000000 55%,#000000 75%,#ce1126 75%)}
+      --small: clamp(18px, 1.6vw, 26px);
+      --mid: clamp(22px, 2.0vw, 30px);
+      --date: clamp(26px, 2.2vw, 34px);
 
-/* TOP RIGHT TZ PILL */
-.tz{
-  position:absolute;
-  top:16px;
-  right:16px;
-  padding:7px 14px;
-  border-radius:999px;
-  background:rgba(0,0,0,.55);
-  font-size:14px;
-  font-weight:900;
-  border:1px solid rgba(255,255,255,.18);
-  text-shadow:0 4px 12px rgba(0,0,0,.65);
-}
+      --shadow: 0 20px 55px rgba(0,0,0,0.45);
+    }
 
-/* FULL-WIDTH GLASS PLATE (end-to-end inside the card) */
-.centerPlate{
-  position:absolute;
-  left:16px;                 /* safe inset so it never clips */
-  right:16px;
-  top:56%;
-  transform:translateY(-50%);
-  text-align:center;
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; margin:0; background:#000; }
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      overflow:hidden;
+      background:
+        radial-gradient(1100px 700px at 18% 20%, rgba(80,130,255,0.14), transparent 60%),
+        radial-gradient(1100px 700px at 82% 78%, rgba(255,80,170,0.10), transparent 60%),
+        linear-gradient(160deg, var(--bg0), var(--bg1));
+    }
 
-  padding:34px 22px 30px;
-  border-radius:28px;
-  background:rgba(0,0,0,.42);
-  border:1px solid rgba(255,255,255,.18);
-  backdrop-filter:blur(10px);
-  box-shadow:0 18px 55px rgba(0,0,0,.65);
+    .wrap{
+      height:100%;
+      padding: var(--pad);
+    }
 
-  min-height: 320px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  gap:10px;
-}
+    .grid{
+      height:100%;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--pad);
+    }
 
-/* BIG CITY + FLAG (same "headline tier" as time) */
-.cityBig{
-  font-weight:1000;
-  letter-spacing:.2px;
-  line-height:1;
-  text-shadow:0 10px 30px rgba(0,0,0,.65);
+    .card{
+      position:relative;
+      border-radius: var(--cardRadius);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.10);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.07), rgba(0,0,0,0.28));
+    }
 
-  /* Make it BIG like the time */
-  font-size:clamp(72px,6.5vw,120px);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:18px;
-}
+    /* Flag stripes */
+    .flagBg{
+      position:absolute; inset:0;
+      filter: saturate(1.15) contrast(1.05);
+      opacity: 0.98;
+    }
+    /* Soft shading so white stripes don’t nuke readability */
+    .shade{
+      position:absolute; inset:0;
+      background:
+        radial-gradient(1000px 900px at 50% 55%, rgba(0,0,0,0.22), rgba(0,0,0,0.40)),
+        linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.30));
+      pointer-events:none;
+    }
 
-.cityBig .flag{
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,.55));
-  transform: translateY(-2px);
-}
+    /* Glass panel – FULL WIDTH inside card */
+    .glass{
+      position:absolute;
+      left: 22px; right: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 28px 28px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+      box-shadow: 0 18px 50px rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(10px);
+    }
+    .glass::before{
+      content:"";
+      position:absolute; inset:0;
+      border-radius: 22px;
+      background: radial-gradient(700px 220px at 30% 15%, rgba(255,255,255,0.14), transparent 60%);
+      pointer-events:none;
+      opacity: 0.9;
+    }
 
-/* TIME (big) */
-.time12{
-  font-size:clamp(110px,9vw,175px);
-  font-weight:1000;
-  letter-spacing:.4px;
-  line-height:.95;
-  display:flex;
-  align-items:baseline;
-  justify-content:center;
-}
+    .topRow{
+      position:absolute;
+      left: 18px; right: 18px; top: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      z-index: 3;
+      pointer-events:none;
+    }
+    .cityTop{
+      display:flex;
+      align-items:center;
+      gap: 14px;
+      font-weight: 950;
+      font-size: clamp(24px, 2.4vw, 38px);
+      text-shadow: 0 12px 26px rgba(0,0,0,0.45);
+    }
+    .pill{
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.14);
+      font-weight: 900;
+      font-size: clamp(14px, 1.2vw, 18px);
+      color: rgba(255,255,255,0.88);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+    }
 
-/* blink only the ':' */
-.blinkColon{
-  display:inline-block;
-  width:0.55em;
-  text-align:center;
-  animation: blink 1s steps(1,end) infinite;
-}
-@keyframes blink{ 50%{ opacity:.25; } }
+    .content{
+      position:relative;
+      z-index: 4;
+      text-align:center;
+    }
 
-.ampm{
-  margin-left:14px;
-  font-size:0.85em;          /* keep AM/PM big */
-  font-weight:1000;
-}
+    .cityBig{
+      font-size: var(--city);
+      font-weight: 950;
+      letter-spacing: 0.5px;
+      text-shadow: 0 16px 36px rgba(0,0,0,0.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 16px;
+      line-height: 1.05;
+      margin-bottom: 10px;
+      white-space: nowrap;
+    }
 
-/* 24h */
-.time24{
-  font-size:clamp(24px,1.8vw,38px);
-  font-weight:950;
-  letter-spacing:1.4px;
-  opacity:.92;
-}
+    .time12{
+      display:flex;
+      align-items:baseline;
+      justify-content:center;
+      gap: 10px;
+      margin-top: 2px;
+      margin-bottom: 10px;
+      white-space: nowrap;
+    }
+    .hhmm{
+      font-size: var(--time);
+      font-weight: 980;
+      letter-spacing: 1px;
+      text-shadow: 0 18px 44px rgba(0,0,0,0.62);
+    }
+    .ampm{
+      font-size: var(--ampm);
+      font-weight: 980;
+      letter-spacing: 1px;
+      text-shadow: 0 18px 44px rgba(0,0,0,0.62);
+    }
+    .colonBlink{
+      display:inline-block;
+      width: 0.6ch;
+      text-align:center;
+      animation: blink 1s steps(1,end) infinite;
+    }
+    @keyframes blink{ 50%{ opacity:0.28; } }
 
-/* DATE */
-.date{
-  font-size:clamp(30px,2.4vw,46px);
-  font-weight:1000;
-}
+    .t24{
+      margin-top: 2px;
+      font-size: var(--mid);
+      font-weight: 900;
+      color: rgba(255,255,255,0.86);
+      letter-spacing: 1px;
+    }
 
-/* WEATHER */
-.weather{
-  margin-top:10px;
-  font-size:clamp(26px,2.2vw,40px);
-  font-weight:950;
-  opacity:.98;
-  line-height:1.35;
-}
+    .dateLine{
+      margin-top: 8px;
+      font-size: var(--date);
+      font-weight: 950;
+      color: rgba(255,255,255,0.94);
+      text-shadow: 0 14px 28px rgba(0,0,0,0.55);
+    }
 
-/* SMALL SCREENS */
-@media(max-width:1000px){
-  .wrapper{grid-template-columns:1fr}
-}
-</style>
+    .wx{
+      margin-top: 18px; /* moved down a bit */
+      font-size: var(--mid);
+      font-weight: 950;
+      color: rgba(255,255,255,0.92);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .wxIcon{
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.28);
+      border: 1px solid rgba(255,255,255,0.14);
+      display:grid;
+      place-items:center;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+      font-size: 22px;
+    }
+    .wxText{
+      font-weight: 950;
+      color: rgba(255,255,255,0.92);
+    }
+    .wxSub{
+      font-weight: 900;
+      color: rgba(255,255,255,0.86);
+    }
+
+    @media (max-width: 1100px){
+      .grid{ grid-template-columns: 1fr; }
+      .glass{ left: 18px; right: 18px; }
+    }
+  </style>
 </head>
 
 <body>
-<div class="wrapper">
-
-  <!-- MIAMI -->
-  <div class="card miami" data-tz="America/New_York" data-lat="25.7617" data-lon="-80.1918" data-city="Miami" data-flag="🇺🇸" data-tzlabel="EST">
-    <div class="tz">EST</div>
-    <div class="centerPlate">
-      <div class="cityBig"><span class="flag">🇺🇸</span><span class="name">Miami</span></div>
-      <div class="time12"></div>
-      <div class="time24"></div>
-      <div class="date"></div>
-      <div class="weather"></div>
-    </div>
+  <div class="wrap">
+    <div class="grid" id="grid"></div>
   </div>
 
-  <!-- LONDON -->
-  <div class="card london" data-tz="Europe/London" data-lat="51.5072" data-lon="-0.1276" data-city="London" data-flag="🇬🇧" data-tzlabel="GMT">
-    <div class="tz">GMT</div>
-    <div class="centerPlate">
-      <div class="cityBig"><span class="flag">🇬🇧</span><span class="name">London</span></div>
-      <div class="time12"></div>
-      <div class="time24"></div>
-      <div class="date"></div>
-      <div class="weather"></div>
-    </div>
-  </div>
+  <script>
+    // ===== Config =====
+    const WEATHER_REFRESH_MS = 10 * 60 * 1000;
 
-  <!-- DUBAI -->
-  <div class="card dubai" data-tz="Asia/Dubai" data-lat="25.2048" data-lon="55.2708" data-city="Dubai" data-flag="🇦🇪" data-tzlabel="GMT+4">
-    <div class="tz">GMT+4</div>
-    <div class="centerPlate">
-      <div class="cityBig"><span class="flag">🇦🇪</span><span class="name">Dubai</span></div>
-      <div class="time12"></div>
-      <div class="time24"></div>
-      <div class="date"></div>
-      <div class="weather"></div>
-    </div>
-  </div>
+    const CITIES = [
+      {
+        label: "Miami",
+        tz: "America/New_York",
+        flag: "🇺🇸",
+        tzBadge: "EST",
+        lat: 25.7617, lon: -80.1918,
+        // brighter “flag-ish” stripes
+        stripes: ["#B31942", "#FFFFFF", "#0A3161"]
+      },
+      {
+        label: "London",
+        tz: "Europe/London",
+        flag: "🇬🇧",
+        tzBadge: "GMT",
+        lat: 51.5072, lon: -0.1276,
+        stripes: ["#012169", "#FFFFFF", "#C8102E"]
+      },
+      {
+        label: "Dubai",
+        tz: "Asia/Dubai",
+        flag: "🇦🇪",
+        tzBadge: "GMT+4",
+        lat: 25.2048, lon: 55.2708,
+        stripes: ["#00732F", "#FFFFFF", "#000000", "#CE1126"]
+      }
+    ];
 
-</div>
+    // ===== Helpers =====
+    const grid = document.getElementById("grid");
 
-<script>
-function timeParts(tz){
-  const parts = new Intl.DateTimeFormat("en-US",{
-    timeZone:tz,
-    hour:"2-digit", minute:"2-digit", second:"2-digit",
-    hour12:true
-  }).formatToParts(new Date());
-
-  const hh = parts.find(p=>p.type==="hour")?.value ?? "12";
-  const mm = parts.find(p=>p.type==="minute")?.value ?? "00";
-  const ss = parts.find(p=>p.type==="second")?.value ?? "00";
-  const ap = (parts.find(p=>p.type==="dayPeriod")?.value ?? "").toUpperCase();
-  return {hh,mm,ss,ap};
-}
-
-function updateClocks(){
-  document.querySelectorAll(".card").forEach(card=>{
-    const tz=card.dataset.tz;
-    const now=new Date();
-
-    // 12h: NO seconds, blink only the ':'
-    const {hh,mm,ap} = timeParts(tz);
-    card.querySelector(".time12").innerHTML =
-      `<span>${parseInt(hh,10)}</span><span class="blinkColon">:</span><span>${mm}</span><span class="ampm">${ap}</span>`;
-
-    // 24h: keep seconds
-    const t24=new Intl.DateTimeFormat("en-GB",{timeZone:tz,hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(now);
-    const date=new Intl.DateTimeFormat("en-US",{timeZone:tz,weekday:"short",month:"short",day:"2-digit"}).format(now);
-
-    card.querySelector(".time24").textContent=t24;
-    card.querySelector(".date").textContent=date;
-  });
-}
-setInterval(updateClocks,1000);
-updateClocks();
-
-/* WEATHER */
-async function loadWeather(){
-  document.querySelectorAll(".card").forEach(async card=>{
-    const lat=card.dataset.lat;
-    const lon=card.dataset.lon;
-    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto`;
-    try{
-      const r=await fetch(url, {cache:"no-store"});
-      const d=await r.json();
-
-      const f=Math.round(d.current.temperature_2m);
-      const c=Math.round((f-32)*5/9);
-
-      // tomorrow (index 1)
-      const hiF=Math.round(d.daily.temperature_2m_max[1]);
-      const loF=Math.round(d.daily.temperature_2m_min[1]);
-      const hiC=Math.round((hiF-32)*5/9);
-      const loC=Math.round((loF-32)*5/9);
-
-      card.querySelector(".weather").textContent =
-        `${f}°F / ${c}°C • Tomorrow ${hiF}/${loF}°F (${hiC}/${loC}°C)`;
-    }catch(e){
-      card.querySelector(".weather").textContent="Weather unavailable";
+    function flagGradient(colors){
+      const cols = Array.isArray(colors) && colors.length ? colors : ["#111"];
+      const n = cols.length;
+      const stops = cols.map((c, i) => {
+        const p0 = Math.round((i / n) * 100);
+        const p1 = Math.round(((i + 1) / n) * 100);
+        return `${c} ${p0}%, ${c} ${p1}%`;
+      }).join(", ");
+      return `linear-gradient(90deg, ${stops})`;
     }
-  });
-}
-loadWeather();
-setInterval(loadWeather,15*60*1000);
-</script>
+
+    function fmtDateLong(tz){
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone: tz,
+        weekday: "long",
+        month: "short",
+        day: "2-digit"
+      }).format(new Date());
+    }
+
+    function fmtTime24WithSeconds(tz){
+      return new Intl.DateTimeFormat("en-GB", {
+        timeZone: tz,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      }).format(new Date());
+    }
+
+    function time12Parts(tz){
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz,
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      }).formatToParts(new Date());
+
+      const hour = (parts.find(p=>p.type==="hour")?.value || "12");
+      const minute = (parts.find(p=>p.type==="minute")?.value || "00");
+      const dayPeriod = (parts.find(p=>p.type==="dayPeriod")?.value || "").toUpperCase();
+      return { hour, minute, dayPeriod };
+    }
+
+    function cToF(c){ return (c * 9/5) + 32; }
+    function fToC(f){ return (f - 32) * 5/9; }
+
+    function round(n){ return Math.round(n); }
+
+    function wxFromCode(code){
+      const map = {
+        0:["☀️","Clear"],
+        1:["🌤️","Mostly clear"],
+        2:["⛅","Partly cloudy"],
+        3:["☁️","Overcast"],
+        45:["🌫️","Fog"],48:["🌫️","Rime fog"],
+        51:["🌦️","Drizzle"],53:["🌦️","Drizzle"],55:["🌦️","Drizzle"],
+        56:["🌧️","Freezing drizzle"],57:["🌧️","Freezing drizzle"],
+        61:["🌧️","Rain"],63:["🌧️","Rain"],65:["🌧️","Heavy rain"],
+        66:["🌧️","Freezing rain"],67:["🌧️","Freezing rain"],
+        71:["🌨️","Snow"],73:["🌨️","Snow"],75:["🌨️","Heavy snow"],77:["🌨️","Snow grains"],
+        80:["🌦️","Showers"],81:["🌦️","Showers"],82:["🌧️","Heavy showers"],
+        85:["🌨️","Snow showers"],86:["🌨️","Snow showers"],
+        95:["⛈️","Thunderstorm"],96:["⛈️","Thunderstorm"],99:["⛈️","Thunderstorm"]
+      };
+      return map[code] || ["🌡️","Weather"];
+    }
+
+    async function fetchWeather(lat, lon){
+      // current + daily hi/lo for today/tomorrow
+      const url =
+        `https://api.open-meteo.com/v1/forecast` +
+        `?latitude=${encodeURIComponent(lat)}` +
+        `&longitude=${encodeURIComponent(lon)}` +
+        `&current=temperature_2m,weather_code` +
+        `&daily=temperature_2m_max,temperature_2m_min,weather_code` +
+        `&temperature_unit=fahrenheit` +
+        `&timezone=auto` +
+        `&forecast_days=2`;
+
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("Weather fetch failed");
+      const data = await res.json();
+
+      const curF = data?.current?.temperature_2m;
+      const curCode = data?.current?.weather_code;
+
+      const dMax = data?.daily?.temperature_2m_max || [];
+      const dMin = data?.daily?.temperature_2m_min || [];
+      const dCode = data?.daily?.weather_code || [];
+
+      return {
+        curF,
+        curCode,
+        tomHiF: dMax[1],
+        tomLoF: dMin[1],
+        tomCode: dCode[1]
+      };
+    }
+
+    function buildCard(c){
+      const card = document.createElement("section");
+      card.className = "card";
+
+      const flag = document.createElement("div");
+      flag.className = "flagBg";
+      flag.style.backgroundImage = flagGradient(c.stripes);
+
+      const shade = document.createElement("div");
+      shade.className = "shade";
+
+      const top = document.createElement("div");
+      top.className = "topRow";
+      top.innerHTML = `
+        <div class="cityTop"><span>${c.flag}</span><span>${c.label}</span></div>
+        <div class="pill">${c.tzBadge}</div>
+      `;
+
+      const glass = document.createElement("div");
+      glass.className = "glass";
+      glass.innerHTML = `
+        <div class="content">
+          <div class="cityBig"><span>${c.flag}</span><span>${c.label}</span></div>
+
+          <div class="time12">
+            <div class="hhmm" data-hhmm></div>
+            <div class="ampm" data-ampm></div>
+          </div>
+
+          <div class="t24" data-t24>--:--:--</div>
+          <div class="dateLine" data-date>------</div>
+
+          <div class="wx">
+            <div class="wxIcon" data-wxicon>🌡️</div>
+            <div class="wxText" data-wxtext>--</div>
+            <div class="wxSub" data-wxsub>Loading...</div>
+          </div>
+        </div>
+      `;
+
+      card.append(flag, shade, top, glass);
+
+      // stash refs
+      card._refs = {
+        hhmm: glass.querySelector("[data-hhmm]"),
+        ampm: glass.querySelector("[data-ampm]"),
+        t24:  glass.querySelector("[data-t24]"),
+        date: glass.querySelector("[data-date]"),
+        wxIcon: glass.querySelector("[data-wxicon]"),
+        wxText: glass.querySelector("[data-wxtext]"),
+        wxSub:  glass.querySelector("[data-wxsub]")
+      };
+
+      return card;
+    }
+
+    function renderTime(card, c){
+      const { hour, minute, dayPeriod } = time12Parts(c.tz);
+
+      // Big time: HH:MM with blinking colon, no seconds
+      card._refs.hhmm.innerHTML = `
+        ${hour}<span class="colonBlink">:</span>${minute}
+      `;
+      card._refs.ampm.textContent = dayPeriod;
+
+      // 24h line with seconds
+      card._refs.t24.textContent = fmtTime24WithSeconds(c.tz);
+
+      // Full weekday
+      card._refs.date.textContent = fmtDateLong(c.tz);
+    }
+
+    async function renderWeather(card, c){
+      try{
+        const wx = await fetchWeather(c.lat, c.lon);
+
+        const [icon, label] = wxFromCode(wx.curCode);
+        card._refs.wxIcon.textContent = icon;
+
+        const curF = (typeof wx.curF === "number") ? round(wx.curF) : null;
+        const curC = (curF !== null) ? round(fToC(curF)) : null;
+
+        const hiF = (typeof wx.tomHiF === "number") ? round(wx.tomHiF) : null;
+        const loF = (typeof wx.tomLoF === "number") ? round(wx.tomLoF) : null;
+        const hiC = (hiF !== null) ? round(fToC(hiF)) : null;
+        const loC = (loF !== null) ? round(fToC(loF)) : null;
+
+        card._refs.wxText.textContent =
+          (curF !== null && curC !== null) ? `${curF}°F / ${curC}°C` : `--`;
+
+        card._refs.wxSub.textContent =
+          ` ${label}  •  Tomorrow ${hiF ?? "--"}/${loF ?? "--"}°F (${hiC ?? "--"}/${loC ?? "--"}°C)`;
+
+      } catch (e){
+        card._refs.wxIcon.textContent = "🌡️";
+        card._refs.wxText.textContent = "--";
+        card._refs.wxSub.textContent = "Weather unavailable";
+      }
+    }
+
+    // ===== Boot =====
+    const cards = CITIES.map(c => {
+      const card = buildCard(c);
+      grid.appendChild(card);
+      return { card, c };
+    });
+
+    function tick(){
+      for (const x of cards) renderTime(x.card, x.c);
+    }
+
+    async function refreshWx(){
+      await Promise.allSettled(cards.map(x => renderWeather(x.card, x.c)));
+    }
+
+    tick();
+    setInterval(tick, 1000);
+
+    refreshWx();
+    setInterval(refreshWx, WEATHER_REFRESH_MS);
+  </script>
 </body>
 </html>
