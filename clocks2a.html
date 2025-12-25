@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>World Clocks – Page 2</title>
+
+<style>
+:root{
+  --city: clamp(72px, 6vw, 110px);
+  --time: clamp(120px, 10vw, 170px);
+  --glass: rgba(30,30,40,.55);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#000;color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto}
+
+.wrapper{
+  height:100%;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+}
+
+.card{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.flag{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+}
+.flag div{filter:saturate(1.25)}
+
+.glass{
+  position:relative;
+  padding:60px 80px;
+  border-radius:28px;
+  background:var(--glass);
+  backdrop-filter:blur(22px);
+  box-shadow:0 30px 70px rgba(0,0,0,.55);
+  text-align:center;
+  width:100%;
+  max-width:92%;
+}
+
+.city{
+  font-size:var(--city);
+  font-weight:900;
+  display:flex;
+  justify-content:center;
+  gap:18px;
+  margin-bottom:18px;
+}
+
+.time{
+  font-size:var(--time);
+  font-weight:950;
+  letter-spacing:2px;
+}
+
+.blink{
+  animation:blink 1s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:.25}}
+
+.ampm{
+  font-size:clamp(48px,4vw,72px);
+  margin-left:8px;
+}
+
+.sub{
+  margin-top:8px;
+  opacity:.9;
+  font-size:28px;
+}
+
+.weather{
+  margin-top:18px;
+  font-size:32px;
+  font-weight:700;
+}
+
+.small{
+  font-size:22px;
+  opacity:.85;
+}
+
+.tz{
+  position:absolute;
+  top:18px;
+  right:24px;
+  padding:6px 14px;
+  border-radius:999px;
+  background:rgba(0,0,0,.45);
+  font-weight:700;
+}
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+<!-- MIAMI -->
+<section class="card">
+  <div class="flag">
+    <div style="background:#c91f2c"></div>
+    <div style="background:#ffffff"></div>
+    <div style="background:#26408b"></div>
+  </div>
+
+  <div class="tz">EST</div>
+
+  <div class="glass">
+    <div class="city">🇺🇸 Miami</div>
+    <div class="time">12<span class="blink">:</span>52<span class="ampm">AM</span></div>
+    <div class="sub">24HR 00:52</div>
+    <div class="sub">Thursday, Dec 25</div>
+    <div class="weather">⛅ 68°F / 20°C</div>
+    <div class="small">Tomorrow 78 / 58°F (26 / 14°C)</div>
+  </div>
+</section>
+
+<!-- LONDON -->
+<section class="card">
+  <div class="flag">
+    <div style="background:#00247d"></div>
+    <div style="background:#ffffff"></div>
+    <div style="background:#cf142b"></div>
+  </div>
+
+  <div class="tz">GMT</div>
+
+  <div class="glass">
+    <div class="city">🇬🇧 London</div>
+    <div class="time">5<span class="blink">:</span>52<span class="ampm">AM</span></div>
+    <div class="sub">24HR 05:52</div>
+    <div class="sub">Thursday, Dec 25</div>
+    <div class="weather">☀️ 38°F / 3°C</div>
+    <div class="small">Tomorrow 43 / 39°F (6 / 4°C)</div>
+  </div>
+</section>
+
+<!-- DUBAI -->
+<section class="card">
+  <div class="flag">
+    <div style="background:#1f7a34"></div>
+    <div style="background:#ffffff"></div>
+    <div style="background:#000000"></div>
+  </div>
+
+  <div class="tz">GMT+4</div>
+
+  <div class="glass">
+    <div class="city">🇦🇪 Dubai</div>
+    <div class="time">9<span class="blink">:</span>52<span class="ampm">AM</span></div>
+    <div class="sub">24HR 09:52</div>
+    <div class="sub">Thursday, Dec 25</div>
+    <div class="weather">☁️ 67°F / 19°C</div>
+    <div class="small">Tomorrow 75 / 64°F (24 / 18°C)</div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
