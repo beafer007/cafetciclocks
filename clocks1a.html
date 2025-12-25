@@ -40,17 +40,18 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
   display:flex;
   justify-content:space-between;
   align-items:center;
-  font-weight:900;
-  font-size:22px;
-  text-shadow:0 4px 12px rgba(0,0,0,.6);
+  font-weight:950;
+  font-size:30px;            /* BIGGER city name */
+  letter-spacing:.2px;
+  text-shadow:0 4px 14px rgba(0,0,0,.65);
 }
 
 .tz{
-  padding:6px 12px;
+  padding:7px 14px;
   border-radius:999px;
   background:rgba(0,0,0,.55);
   font-size:14px;
-  font-weight:800;
+  font-weight:900;
 }
 
 /* CENTER GLASS PLATE */
@@ -59,23 +60,43 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
   left:50%;
   top:56%;
   transform:translate(-50%,-50%);
-  width:min(92%,520px);
+  width:min(92%,560px);
   text-align:center;
   padding:26px 24px 22px;
   border-radius:26px;
-  background:rgba(0,0,0,.42);
+  background:rgba(0,0,0,.40);
   border:1px solid rgba(255,255,255,.16);
   backdrop-filter:blur(8px);
 }
 
-/* TIME */
+/* TIME (big) */
 .time12{
-  font-size:clamp(96px,8vw,150px);
+  font-size:clamp(102px,8.6vw,160px);
   font-weight:950;
-  letter-spacing:.5px;
+  letter-spacing:.4px;
   line-height:.95;
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap:0;
 }
 
+/* blink only the ':' */
+.blinkColon{
+  display:inline-block;
+  width:0.55em;
+  text-align:center;
+  animation: blink 1s steps(1,end) infinite;
+}
+@keyframes blink{ 50%{ opacity:.25; } }
+
+.ampm{
+  margin-left:14px;
+  font-size:0.58em;
+  font-weight:950;
+}
+
+/* 24h */
 .time24{
   margin-top:10px;
   font-size:clamp(22px,1.6vw,34px);
@@ -87,15 +108,15 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
 /* DATE */
 .date{
   margin-top:12px;
-  font-size:clamp(26px,2vw,38px);
-  font-weight:900;
+  font-size:clamp(28px,2.2vw,42px);
+  font-weight:950;
 }
 
 /* WEATHER */
 .weather{
-  margin-top:18px;
-  font-size:clamp(22px,1.7vw,34px);
-  font-weight:900;
+  margin-top:22px; /* moved down a bit */
+  font-size:clamp(22px,1.8vw,36px);
+  font-weight:950;
   opacity:.95;
   line-height:1.35;
 }
@@ -155,16 +176,36 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
 </div>
 
 <script>
+function pad2(n){ return String(n).padStart(2,"0"); }
+
+function timeParts(tz){
+  const parts = new Intl.DateTimeFormat("en-US",{
+    timeZone:tz,
+    hour:"2-digit", minute:"2-digit", second:"2-digit",
+    hour12:true
+  }).formatToParts(new Date());
+
+  const hh = parts.find(p=>p.type==="hour")?.value ?? "12";
+  const mm = parts.find(p=>p.type==="minute")?.value ?? "00";
+  const ss = parts.find(p=>p.type==="second")?.value ?? "00";
+  const ap = (parts.find(p=>p.type==="dayPeriod")?.value ?? "").toUpperCase();
+  return {hh,mm,ss,ap};
+}
+
 function updateClocks(){
   document.querySelectorAll(".card").forEach(card=>{
     const tz=card.dataset.tz;
     const now=new Date();
 
-    const t12=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour:"numeric",minute:"2-digit",second:"2-digit",hour12:true}).format(now);
+    // 12h: NO seconds, blink only the ':'
+    const {hh,mm,ss,ap} = timeParts(tz);
+    card.querySelector(".time12").innerHTML =
+      `<span>${parseInt(hh,10)}</span><span class="blinkColon">:</span><span>${mm}</span><span class="ampm">${ap}</span>`;
+
+    // 24h: keep seconds
     const t24=new Intl.DateTimeFormat("en-GB",{timeZone:tz,hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(now);
     const date=new Intl.DateTimeFormat("en-US",{timeZone:tz,weekday:"short",month:"short",day:"2-digit"}).format(now);
 
-    card.querySelector(".time12").textContent=t12;
     card.querySelector(".time24").textContent=t24;
     card.querySelector(".date").textContent=date;
   });
@@ -181,13 +222,16 @@ async function loadWeather(){
     try{
       const r=await fetch(url);
       const d=await r.json();
+
       const f=Math.round(d.current.temperature_2m);
       const c=Math.round((f-32)*5/9);
+
       const hiF=Math.round(d.daily.temperature_2m_max[1]);
       const loF=Math.round(d.daily.temperature_2m_min[1]);
       const hiC=Math.round((hiF-32)*5/9);
       const loC=Math.round((loF-32)*5/9);
-      card.querySelector(".weather").textContent=
+
+      card.querySelector(".weather").textContent =
         `${f}°F / ${c}°C • Tomorrow ${hiF}/${loF}°F (${hiC}/${loC}°C)`;
     }catch(e){
       card.querySelector(".weather").textContent="Weather unavailable";
