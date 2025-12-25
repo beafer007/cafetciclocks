@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta http-equiv="refresh" content="21600">
+  <title>Clocks 3</title>
+  <style>
+    :root{--bg0:#070a0f;--bg1:#0a1220;--text:rgba(255,255,255,.92);--muted:rgba(255,255,255,.72);
+      --pad:clamp(14px,2vw,26px);--radius:22px;--city:clamp(18px,2.2vw,34px);
+      --big:clamp(58px,6.8vw,110px);--small:clamp(22px,2.4vw,44px);--meta:clamp(14px,1.4vw,22px);}
+    *{box-sizing:border-box} html,body{height:100%;margin:0}
+    body{background:radial-gradient(900px 600px at 15% 15%,rgba(120,170,255,.14),transparent 55%),
+      radial-gradient(900px 600px at 85% 85%,rgba(255,120,210,.10),transparent 55%),
+      linear-gradient(160deg,var(--bg0),var(--bg1));color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;overflow:hidden}
+    .wrap{height:100%;padding:var(--pad)}
+    .grid{height:100%;display:grid;gap:var(--pad);grid-template-columns:repeat(3,minmax(0,1fr))}
+    @media (max-width:1150px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .card{position:relative;border-radius:var(--radius);padding:calc(var(--pad)*.95);overflow:hidden;
+      border:1px solid rgba(255,255,255,.10);box-shadow:0 14px 36px rgba(0,0,0,.40);
+      background:radial-gradient(800px 240px at 20% 0%,rgba(var(--accent),.16),transparent 55%),
+      linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.05))}
+    .card::before{content:"";position:absolute;inset:0;opacity:.26;background:var(--flagwash);pointer-events:none}
+    .card::after{content:"";position:absolute;inset:0;background:radial-gradient(1200px 900px at 50% 40%,rgba(0,0,0,0),rgba(0,0,0,.35));pointer-events:none}
+    .content{position:relative;height:100%;display:flex;flex-direction:column;justify-content:space-between;gap:14px}
+    .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .city{display:flex;align-items:center;gap:10px;font-size:var(--city);font-weight:900;line-height:1.1;
+      text-shadow:0 10px 24px rgba(0,0,0,.45)}
+    .city .name{color:#ffd84a}
+    .meta{display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-size:var(--meta);color:var(--muted);font-weight:850;white-space:nowrap}
+    .pill{border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);padding:8px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:8px}
+    .timeBig{font-size:var(--big);font-weight:950;letter-spacing:2px;font-variant-numeric:tabular-nums;text-shadow:0 18px 40px rgba(0,0,0,.55)}
+    .timeSmall{margin-top:6px;font-size:var(--small);font-weight:950;letter-spacing:1px;color:#ffd84a;font-variant-numeric:tabular-nums;text-shadow:0 14px 26px rgba(0,0,0,.55)}
+    .wxIcon{font-size:1.2em} .wxTemp{font-weight:950;color:rgba(255,255,255,.92)} .wxNote{color:rgba(255,255,255,.70);font-weight:850}
+  </style>
+</head>
+<body>
+  <div class="wrap"><main class="grid" id="grid"></main></div>
+  <script>
+    const WEATHER_ENABLED = true;
+    const WEATHER_REFRESH_MS = 15 * 60 * 1000;
+
+    const CLOCKS = [
+      { label:"Providenciales", flag:"🇹🇨", zone:"US_E", accent:"120,190,255", flagColors:["#00a3e0","#ffffff","#012169"], lat:21.6940, lon:-71.7979 },
+      { label:"Toronto",        flag:"🇨🇦", zone:"US_E", accent:"200,60,60",  flagColors:["#d80621","#ffffff","#d80621"], lat:43.6532, lon:-79.3832 },
+      { label:"Las Vegas",      flag:"🇺🇸", zone:"US_P", accent:"140,255,190",flagColors:["#b22234","#ffffff","#3c3b6e"], lat:36.1699, lon:-115.1398 },
+    ];
+
+    const grid = document.getElementById("grid");
+
+    function usDstActive(utcDate){
+      const y = utcDate.getUTCFullYear();
+      function nthSunday(monthIndex, nth){
+        const first = new Date(Date.UTC(y, monthIndex, 1));
+        const firstDow = first.getUTCDay();
+        const firstSundayDom = 1 + ((7 - firstDow) % 7);
+        return firstSundayDom + (nth-1)*7;
+      }
+      const marchSecondSunday = nthSunday(2, 2);
+      const novFirstSunday = nthSunday(10, 1);
+
+      const start = Date.UTC(y, 2, marchSecondSunday, 7, 0, 0);
+      const end   = Date.UTC(y,10, novFirstSunday,   6, 0, 0);
+      const t = utcDate.getTime();
+      return t >= start && t < end;
+    }
+
+    const ZONE_BASE_MIN = { US_E: -5*60, US_P: -8*60 };
+
+    function zoneOffsetMinutes(zone, utcDate){
+      let base = ZONE_BASE_MIN[zone] ?? 0;
+      if ((zone === "US_E" || zone === "US_P") && usDstActive(utcDate)) base += 60;
+      return base;
+    }
+
+    function localDateForZone(zone){
+      const now = new Date();
+      const utc = new Date(now.getTime() + now.getTimezoneOffset()*60000);
+      const offMin = zoneOffsetMinutes(zone, utc);
+      return new Date(utc.getTime() + offMin*60000);
+    }
+
+    function pad2(n){ return (n < 10 ? "0" : "") + n; }
+    function formatTime24(d){ return `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`; }
+    function formatTime12(d){
+      let h = d.getHours();
+      const ap = h >= 12 ? "PM" : "AM";
+      h = h % 12; if (h === 0) h = 12;
+      return `${pad2(h)}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())} ${ap}`;
+    }
+    function formatDate(d){
+      const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      return `${days[d.getDay()]}, ${months[d.getMonth()]} ${pad2(d.getDate())}`;
+    }
+
+    function tzLabel(zone, utcDate){
+      if (zone === "US_P") return usDstActive(utcDate) ? "PDT" : "PST";
+      if (zone === "US_E") return usDstActive(utcDate) ? "EDT" : "EST";
+      return "UTC";
+    }
+
+    function flagWashGradient(colors){
+      const cols = (Array.isArray(colors) && colors.length) ? colors : ["#ffffff"];
+      const n = cols.length;
+      const stops = cols.map((c, i) => {
+        const p0 = Math.round((i / n) * 100);
+        const p1 = Math.round(((i+1) / n) * 100);
+        return `${c} ${p0}%, ${c} ${p1}%`;
+      }).join(", ");
+      return `linear-gradient(90deg, ${stops})`;
+    }
+
+    function wxFromCode(code){
+      const map = {
+        0:["☀️","Clear"],1:["🌤️","Mostly clear"],2:["⛅","Partly cloudy"],3:["☁️","Overcast"],
+        45:["🌫️","Fog"],48:["🌫️","Rime fog"],
+        61:["🌧️","Rain"],63:["🌧️","Rain"],65:["🌧️","Heavy rain"],
+        71:["🌨️","Snow"],73:["🌨️","Snow"],75:["🌨️","Heavy snow"],
+        80:["🌦️","Showers"],81:["🌦️","Showers"],82:["🌧️","Heavy showers"],
+        95:["⛈️","Thunderstorm"],96:["⛈️","Thunderstorm"],99:["⛈️","Thunderstorm"]
+      };
+      return map[code] || ["🌡️","Weather"];
+    }
+
+    async function fetchWeather(lat, lon){
+      const url =
+        `https://api.open-meteo.com/v1/forecast` +
+        `?latitude=${encodeURIComponent(lat)}` +
+        `&longitude=${encodeURIComponent(lon)}` +
+        `&current=temperature_2m,weather_code` +
+        `&temperature_unit=fahrenheit` +
+        `&timezone=UTC`;
+
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), 6500);
+
+      try{
+        const res = await fetch(url, { cache:"no-store", signal: controller.signal });
+        if (!res.ok) throw new Error("wx fetch failed");
+        const data = await res.json();
+        return { temp: data?.current?.temperature_2m, code: data?.current?.weather_code };
+      } finally {
+        clearTimeout(t);
+      }
+    }
+
+    function build(){
+      grid.innerHTML = "";
+      for (const c of CLOCKS){
+        const card = document.createElement("section");
+        card.className = "card";
+        card.style.setProperty("--accent", c.accent);
+        card.style.setProperty("--flagwash", flagWashGradient(c.flagColors));
+        card.dataset.zone = c.zone;
+        card.dataset.lat = c.lat;
+        card.dataset.lon = c.lon;
+
+        card.innerHTML = `
+          <div class="content">
+            <div class="top">
+              <div class="city">
+                <span>${c.flag || "🌐"}</span>
+                <span class="name">${c.label}</span>
+              </div>
+              <div class="meta">
+                <div class="pill"><span data-tz>---</span></div>
+                <div class="pill"><span data-date>---</span></div>
+                <div class="pill" data-wx>
+                  <span class="wxIcon">🌡️</span>
+                  <span class="wxTemp">--°F</span>
+                  <span class="wxNote">Loading</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="timeBig" data-t24>--:--:--</div>
+              <div class="timeSmall" data-t12>--:--:-- --</div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      }
+    }
+
+    function tick(){
+      const now = new Date();
+      const utc = new Date(now.getTime() + now.getTimezoneOffset()*60000);
+
+      const cards = Array.from(document.querySelectorAll(".card"));
+      for (const card of cards){
+        const zone = card.dataset.zone;
+        const d = localDateForZone(zone);
+
+        card.querySelector("[data-tz]").textContent = tzLabel(zone, utc);
+        card.querySelector("[data-date]").textContent = formatDate(d);
+        card.querySelector("[data-t24]").textContent = formatTime24(d);
+        card.querySelector("[data-t12]").textContent = formatTime12(d);
+      }
+    }
+
+    async function refreshWeather(){
+      if (!WEATHER_ENABLED) return;
+
+      const cards = Array.from(document.querySelectorAll(".card"));
+      await Promise.allSettled(cards.map(async (card) => {
+        const wxEl = card.querySelector("[data-wx]");
+        if (!wxEl) return;
+
+        const lat = Number(card.dataset.lat);
+        const lon = Number(card.dataset.lon);
+
+        try{
+          const wx = await fetchWeather(lat, lon);
+          const [icon, label] = wxFromCode(wx.code);
+          const t = (typeof wx.temp === "number") ? Math.round(wx.temp) : null;
+
+          wxEl.innerHTML = `
+            <span class="wxIcon">${icon}</span>
+            <span class="wxTemp">${t !== null ? `${t}°F` : "--°F"}</span>
+            <span class="wxNote">${label}</span>
+          `;
+        } catch {
+          wxEl.innerHTML = `
+            <span class="wxIcon">🌡️</span>
+            <span class="wxTemp">--°F</span>
+            <span class="wxNote">Weather</span>
+          `;
+        }
+      }));
+    }
+
+    build();
+    tick();
+    setInterval(tick, 1000);
+
+    refreshWeather();
+    setInterval(refreshWeather, WEATHER_REFRESH_MS);
+  </script>
+</body>
+</html>
