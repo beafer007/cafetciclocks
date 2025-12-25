@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>World Clocks – Bright</title>
+<title>World Clocks – Bright Full Glass</title>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -31,50 +31,61 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
 .london{background:linear-gradient(90deg,#00247d 0%,#00247d 33%,#ffffff 33%,#ffffff 66%,#cf142b 66%)}
 .dubai{background:linear-gradient(90deg,#00732f 0%,#00732f 25%,#ffffff 25%,#ffffff 55%,#000000 55%,#000000 75%,#ce1126 75%)}
 
-/* TOP LABEL */
-.top{
-  position:absolute;
-  top:18px;
-  left:20px;
-  right:20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-weight:950;
-  font-size:40px;            /* BIGGER city name */
-  letter-spacing:.2px;
-  text-shadow:0 4px 14px rgba(0,0,0,.65);
-}
-
+/* TOP RIGHT TZ PILL */
 .tz{
+  position:absolute;
+  top:16px;
+  right:16px;
   padding:7px 14px;
   border-radius:999px;
   background:rgba(0,0,0,.55);
   font-size:14px;
   font-weight:900;
+  border:1px solid rgba(255,255,255,.18);
+  text-shadow:0 4px 12px rgba(0,0,0,.65);
 }
 
-/* CENTER GLASS PLATE (auto grows to fit content) */
+/* FULL-WIDTH GLASS PLATE (end-to-end inside the card) */
 .centerPlate{
   position:absolute;
-  left:50%;
+  left:16px;                 /* safe inset so it never clips */
+  right:16px;
   top:56%;
-  transform:translate(-50%,-50%);
-  width:min(92%,620px);
+  transform:translateY(-50%);
   text-align:center;
 
-  padding:30px 28px 28px;
+  padding:34px 22px 30px;
   border-radius:28px;
-  background:rgba(0,0,0,.40);
+  background:rgba(0,0,0,.42);
   border:1px solid rgba(255,255,255,.18);
   backdrop-filter:blur(10px);
-  box-shadow:0 18px 45px rgba(0,0,0,.55);
+  box-shadow:0 18px 55px rgba(0,0,0,.65);
 
-  /* this is the key: make sure it ALWAYS covers the text */
-  min-height: 280px;
+  min-height: 320px;
   display:flex;
   flex-direction:column;
   justify-content:center;
+  gap:10px;
+}
+
+/* BIG CITY + FLAG (same "headline tier" as time) */
+.cityBig{
+  font-weight:1000;
+  letter-spacing:.2px;
+  line-height:1;
+  text-shadow:0 10px 30px rgba(0,0,0,.65);
+
+  /* Make it BIG like the time */
+  font-size:clamp(72px,6.5vw,120px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:18px;
+}
+
+.cityBig .flag{
+  filter: drop-shadow(0 10px 18px rgba(0,0,0,.55));
+  transform: translateY(-2px);
 }
 
 /* TIME (big) */
@@ -86,7 +97,6 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
   display:flex;
   align-items:baseline;
   justify-content:center;
-  gap:0;
 }
 
 /* blink only the ':' */
@@ -100,30 +110,28 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
 
 .ampm{
   margin-left:14px;
-  font-size:0.82em;          /* BIGGER AM/PM */
+  font-size:0.85em;          /* keep AM/PM big */
   font-weight:1000;
 }
 
 /* 24h */
 .time24{
-  margin-top:10px;
   font-size:clamp(24px,1.8vw,38px);
   font-weight:950;
   letter-spacing:1.4px;
-  opacity:.90;
+  opacity:.92;
 }
 
 /* DATE */
 .date{
-  margin-top:14px;
   font-size:clamp(30px,2.4vw,46px);
   font-weight:1000;
 }
 
 /* WEATHER */
 .weather{
-  margin-top:24px;
-  font-size:clamp(24px,2.0vw,38px);
+  margin-top:10px;
+  font-size:clamp(26px,2.2vw,40px);
   font-weight:950;
   opacity:.98;
   line-height:1.35;
@@ -132,7 +140,6 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
 /* SMALL SCREENS */
 @media(max-width:1000px){
   .wrapper{grid-template-columns:1fr}
-  .centerPlate{min-height:260px}
 }
 </style>
 </head>
@@ -141,12 +148,10 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
 <div class="wrapper">
 
   <!-- MIAMI -->
-  <div class="card miami" data-tz="America/New_York" data-lat="25.7617" data-lon="-80.1918">
-    <div class="top">
-      <div>🇺🇸 Miami</div>
-      <div class="tz">EST</div>
-    </div>
+  <div class="card miami" data-tz="America/New_York" data-lat="25.7617" data-lon="-80.1918" data-city="Miami" data-flag="🇺🇸" data-tzlabel="EST">
+    <div class="tz">EST</div>
     <div class="centerPlate">
+      <div class="cityBig"><span class="flag">🇺🇸</span><span class="name">Miami</span></div>
       <div class="time12"></div>
       <div class="time24"></div>
       <div class="date"></div>
@@ -155,12 +160,10 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
   </div>
 
   <!-- LONDON -->
-  <div class="card london" data-tz="Europe/London" data-lat="51.5072" data-lon="-0.1276">
-    <div class="top">
-      <div>🇬🇧 London</div>
-      <div class="tz">GMT</div>
-    </div>
+  <div class="card london" data-tz="Europe/London" data-lat="51.5072" data-lon="-0.1276" data-city="London" data-flag="🇬🇧" data-tzlabel="GMT">
+    <div class="tz">GMT</div>
     <div class="centerPlate">
+      <div class="cityBig"><span class="flag">🇬🇧</span><span class="name">London</span></div>
       <div class="time12"></div>
       <div class="time24"></div>
       <div class="date"></div>
@@ -169,12 +172,10 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
   </div>
 
   <!-- DUBAI -->
-  <div class="card dubai" data-tz="Asia/Dubai" data-lat="25.2048" data-lon="55.2708">
-    <div class="top">
-      <div>🇦🇪 Dubai</div>
-      <div class="tz">GMT+4</div>
-    </div>
+  <div class="card dubai" data-tz="Asia/Dubai" data-lat="25.2048" data-lon="55.2708" data-city="Dubai" data-flag="🇦🇪" data-tzlabel="GMT+4">
+    <div class="tz">GMT+4</div>
     <div class="centerPlate">
+      <div class="cityBig"><span class="flag">🇦🇪</span><span class="name">Dubai</span></div>
       <div class="time12"></div>
       <div class="time24"></div>
       <div class="date"></div>
@@ -205,7 +206,7 @@ function updateClocks(){
     const now=new Date();
 
     // 12h: NO seconds, blink only the ':'
-    const {hh,mm,ss,ap} = timeParts(tz);
+    const {hh,mm,ap} = timeParts(tz);
     card.querySelector(".time12").innerHTML =
       `<span>${parseInt(hh,10)}</span><span class="blinkColon">:</span><span>${mm}</span><span class="ampm">${ap}</span>`;
 
@@ -227,12 +228,13 @@ async function loadWeather(){
     const lon=card.dataset.lon;
     const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto`;
     try{
-      const r=await fetch(url);
+      const r=await fetch(url, {cache:"no-store"});
       const d=await r.json();
 
       const f=Math.round(d.current.temperature_2m);
       const c=Math.round((f-32)*5/9);
 
+      // tomorrow (index 1)
       const hiF=Math.round(d.daily.temperature_2m_max[1]);
       const loF=Math.round(d.daily.temperature_2m_min[1]);
       const hiC=Math.round((hiF-32)*5/9);
