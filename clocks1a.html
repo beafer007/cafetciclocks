@@ -27,8 +27,8 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
 }
 
 /* FLAG BACKGROUNDS (BRIGHT, VERTICAL) */
-.miami{background:linear-gradient(90deg,#c81d25 0%,#c81d25 33%,#f1f1f1 33%,#f1f1f1 66%,#233e99 66%)}
-.london{background:linear-gradient(90deg,#00247d 0%,#00247d 33%,#f1f1f1 33%,#f1f1f1 66%,#cf142b 66%)}
+.miami{background:linear-gradient(90deg,#c81d25 0%,#c81d25 33%,#ffffff 33%,#ffffff 66%,#233e99 66%)}
+.london{background:linear-gradient(90deg,#00247d 0%,#00247d 33%,#ffffff 33%,#ffffff 66%,#cf142b 66%)}
 .dubai{background:linear-gradient(90deg,#00732f 0%,#00732f 25%,#ffffff 25%,#ffffff 55%,#000000 55%,#000000 75%,#ce1126 75%)}
 
 /* TOP LABEL */
@@ -41,7 +41,7 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
   justify-content:space-between;
   align-items:center;
   font-weight:950;
-  font-size:30px;            /* BIGGER city name */
+  font-size:40px;            /* BIGGER city name */
   letter-spacing:.2px;
   text-shadow:0 4px 14px rgba(0,0,0,.65);
 }
@@ -54,25 +54,33 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
   font-weight:900;
 }
 
-/* CENTER GLASS PLATE */
+/* CENTER GLASS PLATE (auto grows to fit content) */
 .centerPlate{
   position:absolute;
   left:50%;
   top:56%;
   transform:translate(-50%,-50%);
-  width:min(92%,560px);
+  width:min(92%,620px);
   text-align:center;
-  padding:26px 24px 22px;
-  border-radius:26px;
+
+  padding:30px 28px 28px;
+  border-radius:28px;
   background:rgba(0,0,0,.40);
-  border:1px solid rgba(255,255,255,.16);
-  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(10px);
+  box-shadow:0 18px 45px rgba(0,0,0,.55);
+
+  /* this is the key: make sure it ALWAYS covers the text */
+  min-height: 280px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
 }
 
 /* TIME (big) */
 .time12{
-  font-size:clamp(102px,8.6vw,160px);
-  font-weight:950;
+  font-size:clamp(110px,9vw,175px);
+  font-weight:1000;
   letter-spacing:.4px;
   line-height:.95;
   display:flex;
@@ -92,38 +100,39 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
 
 .ampm{
   margin-left:14px;
-  font-size:0.58em;
-  font-weight:950;
+  font-size:0.82em;          /* BIGGER AM/PM */
+  font-weight:1000;
 }
 
 /* 24h */
 .time24{
   margin-top:10px;
-  font-size:clamp(22px,1.6vw,34px);
-  font-weight:900;
+  font-size:clamp(24px,1.8vw,38px);
+  font-weight:950;
   letter-spacing:1.4px;
-  opacity:.85;
+  opacity:.90;
 }
 
 /* DATE */
 .date{
-  margin-top:12px;
-  font-size:clamp(28px,2.2vw,42px);
-  font-weight:950;
+  margin-top:14px;
+  font-size:clamp(30px,2.4vw,46px);
+  font-weight:1000;
 }
 
 /* WEATHER */
 .weather{
-  margin-top:22px; /* moved down a bit */
-  font-size:clamp(22px,1.8vw,36px);
+  margin-top:24px;
+  font-size:clamp(24px,2.0vw,38px);
   font-weight:950;
-  opacity:.95;
+  opacity:.98;
   line-height:1.35;
 }
 
 /* SMALL SCREENS */
 @media(max-width:1000px){
   .wrapper{grid-template-columns:1fr}
+  .centerPlate{min-height:260px}
 }
 </style>
 </head>
@@ -176,8 +185,6 @@ html,body{height:100%;background:#05070c;font-family:system-ui,-apple-system,Seg
 </div>
 
 <script>
-function pad2(n){ return String(n).padStart(2,"0"); }
-
 function timeParts(tz){
   const parts = new Intl.DateTimeFormat("en-US",{
     timeZone:tz,
