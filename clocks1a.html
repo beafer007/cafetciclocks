@@ -12,20 +12,15 @@
     :root{
       --bg0:#05070d;
       --bg1:#070b14;
-      --glass: rgba(20, 26, 38, 0.58);
-      --glass2: rgba(10, 14, 22, 0.35);
       --text: rgba(255,255,255,0.95);
-      --muted: rgba(255,255,255,0.82);
-      --muted2: rgba(255,255,255,0.72);
 
       --cardRadius: 26px;
       --pad: clamp(18px, 2vw, 30px);
 
-      --city: clamp(42px, 4.2vw, 74px);
+      --city: clamp(48px, 4.6vw, 82px); /* slightly bigger */
       --time: clamp(78px, 7.2vw, 132px);
       --ampm: clamp(54px, 5.2vw, 100px);
 
-      --small: clamp(18px, 1.6vw, 26px);
       --mid: clamp(22px, 2.0vw, 30px);
       --date: clamp(26px, 2.2vw, 34px);
 
@@ -44,11 +39,7 @@
         linear-gradient(160deg, var(--bg0), var(--bg1));
     }
 
-    .wrap{
-      height:100%;
-      padding: var(--pad);
-    }
-
+    .wrap{ height:100%; padding: var(--pad); }
     .grid{
       height:100%;
       display:grid;
@@ -62,23 +53,39 @@
       overflow:hidden;
       box-shadow: var(--shadow);
       border: 1px solid rgba(255,255,255,0.10);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.07), rgba(0,0,0,0.28));
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(0,0,0,0.28));
     }
 
-    /* Flag stripes */
     .flagBg{
       position:absolute; inset:0;
       filter: saturate(1.15) contrast(1.05);
       opacity: 0.98;
     }
-    /* Soft shading so white stripes don’t nuke readability */
+
     .shade{
       position:absolute; inset:0;
       background:
         radial-gradient(1000px 900px at 50% 55%, rgba(0,0,0,0.22), rgba(0,0,0,0.40)),
         linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.30));
       pointer-events:none;
+    }
+
+    /* Top-right timezone pill only */
+    .topRight{
+      position:absolute;
+      right: 18px; top: 14px;
+      z-index: 3;
+      pointer-events:none;
+    }
+    .pill{
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.14);
+      font-weight: 900;
+      font-size: clamp(14px, 1.2vw, 18px);
+      color: rgba(255,255,255,0.88);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.35);
     }
 
     /* Glass panel – FULL WIDTH inside card */
@@ -103,40 +110,7 @@
       opacity: 0.9;
     }
 
-    .topRow{
-      position:absolute;
-      left: 18px; right: 18px; top: 14px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      z-index: 3;
-      pointer-events:none;
-    }
-    .cityTop{
-      display:flex;
-      align-items:center;
-      gap: 14px;
-      font-weight: 950;
-      font-size: clamp(24px, 2.4vw, 38px);
-      text-shadow: 0 12px 26px rgba(0,0,0,0.45);
-    }
-    .pill{
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.35);
-      border: 1px solid rgba(255,255,255,0.14);
-      font-weight: 900;
-      font-size: clamp(14px, 1.2vw, 18px);
-      color: rgba(255,255,255,0.88);
-      box-shadow: 0 10px 26px rgba(0,0,0,0.35);
-    }
-
-    .content{
-      position:relative;
-      z-index: 4;
-      text-align:center;
-    }
+    .content{ position:relative; z-index: 4; text-align:center; }
 
     .cityBig{
       font-size: var(--city);
@@ -173,6 +147,7 @@
       letter-spacing: 1px;
       text-shadow: 0 18px 44px rgba(0,0,0,0.62);
     }
+
     .colonBlink{
       display:inline-block;
       width: 0.6ch;
@@ -181,12 +156,22 @@
     }
     @keyframes blink{ 50%{ opacity:0.28; } }
 
-    .t24{
+    .t24Row{
       margin-top: 2px;
+      display:flex;
+      align-items:baseline;
+      justify-content:center;
+      gap: 10px;
       font-size: var(--mid);
       font-weight: 900;
       color: rgba(255,255,255,0.86);
       letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    .t24Label{
+      font-weight: 950;
+      opacity: 0.92;
+      letter-spacing: 1.5px;
     }
 
     .dateLine{
@@ -198,7 +183,7 @@
     }
 
     .wx{
-      margin-top: 18px; /* moved down a bit */
+      margin-top: 18px;
       font-size: var(--mid);
       font-weight: 950;
       color: rgba(255,255,255,0.92);
@@ -218,14 +203,8 @@
       box-shadow: 0 12px 28px rgba(0,0,0,0.35);
       font-size: 22px;
     }
-    .wxText{
-      font-weight: 950;
-      color: rgba(255,255,255,0.92);
-    }
-    .wxSub{
-      font-weight: 900;
-      color: rgba(255,255,255,0.86);
-    }
+    .wxText{ font-weight: 950; }
+    .wxSub{ font-weight: 900; color: rgba(255,255,255,0.86); }
 
     @media (max-width: 1100px){
       .grid{ grid-template-columns: 1fr; }
@@ -240,7 +219,6 @@
   </div>
 
   <script>
-    // ===== Config =====
     const WEATHER_REFRESH_MS = 10 * 60 * 1000;
 
     const CITIES = [
@@ -250,7 +228,6 @@
         flag: "🇺🇸",
         tzBadge: "EST",
         lat: 25.7617, lon: -80.1918,
-        // brighter “flag-ish” stripes
         stripes: ["#B31942", "#FFFFFF", "#0A3161"]
       },
       {
@@ -271,7 +248,6 @@
       }
     ];
 
-    // ===== Helpers =====
     const grid = document.getElementById("grid");
 
     function flagGradient(colors){
@@ -294,12 +270,12 @@
       }).format(new Date());
     }
 
-    function fmtTime24WithSeconds(tz){
+    // 24-hour WITHOUT seconds
+    function fmtTime24NoSeconds(tz){
       return new Intl.DateTimeFormat("en-GB", {
         timeZone: tz,
         hour: "2-digit",
         minute: "2-digit",
-        second: "2-digit",
         hour12: false
       }).format(new Date());
     }
@@ -318,17 +294,12 @@
       return { hour, minute, dayPeriod };
     }
 
-    function cToF(c){ return (c * 9/5) + 32; }
     function fToC(f){ return (f - 32) * 5/9; }
-
     function round(n){ return Math.round(n); }
 
     function wxFromCode(code){
       const map = {
-        0:["☀️","Clear"],
-        1:["🌤️","Mostly clear"],
-        2:["⛅","Partly cloudy"],
-        3:["☁️","Overcast"],
+        0:["☀️","Clear"],1:["🌤️","Mostly clear"],2:["⛅","Partly cloudy"],3:["☁️","Overcast"],
         45:["🌫️","Fog"],48:["🌫️","Rime fog"],
         51:["🌦️","Drizzle"],53:["🌦️","Drizzle"],55:["🌦️","Drizzle"],
         56:["🌧️","Freezing drizzle"],57:["🌧️","Freezing drizzle"],
@@ -343,7 +314,6 @@
     }
 
     async function fetchWeather(lat, lon){
-      // current + daily hi/lo for today/tomorrow
       const url =
         `https://api.open-meteo.com/v1/forecast` +
         `?latitude=${encodeURIComponent(lat)}` +
@@ -358,16 +328,13 @@
       if (!res.ok) throw new Error("Weather fetch failed");
       const data = await res.json();
 
-      const curF = data?.current?.temperature_2m;
-      const curCode = data?.current?.weather_code;
-
       const dMax = data?.daily?.temperature_2m_max || [];
       const dMin = data?.daily?.temperature_2m_min || [];
       const dCode = data?.daily?.weather_code || [];
 
       return {
-        curF,
-        curCode,
+        curF: data?.current?.temperature_2m,
+        curCode: data?.current?.weather_code,
         tomHiF: dMax[1],
         tomLoF: dMin[1],
         tomCode: dCode[1]
@@ -385,12 +352,9 @@
       const shade = document.createElement("div");
       shade.className = "shade";
 
-      const top = document.createElement("div");
-      top.className = "topRow";
-      top.innerHTML = `
-        <div class="cityTop"><span>${c.flag}</span><span>${c.label}</span></div>
-        <div class="pill">${c.tzBadge}</div>
-      `;
+      const topRight = document.createElement("div");
+      topRight.className = "topRight";
+      topRight.innerHTML = `<div class="pill">${c.tzBadge}</div>`;
 
       const glass = document.createElement("div");
       glass.className = "glass";
@@ -403,7 +367,11 @@
             <div class="ampm" data-ampm></div>
           </div>
 
-          <div class="t24" data-t24>--:--:--</div>
+          <div class="t24Row">
+            <span class="t24Label">24HR</span>
+            <span data-t24>--:--</span>
+          </div>
+
           <div class="dateLine" data-date>------</div>
 
           <div class="wx">
@@ -414,9 +382,8 @@
         </div>
       `;
 
-      card.append(flag, shade, top, glass);
+      card.append(flag, shade, topRight, glass);
 
-      // stash refs
       card._refs = {
         hhmm: glass.querySelector("[data-hhmm]"),
         ampm: glass.querySelector("[data-ampm]"),
@@ -432,24 +399,16 @@
 
     function renderTime(card, c){
       const { hour, minute, dayPeriod } = time12Parts(c.tz);
-
-      // Big time: HH:MM with blinking colon, no seconds
-      card._refs.hhmm.innerHTML = `
-        ${hour}<span class="colonBlink">:</span>${minute}
-      `;
+      card._refs.hhmm.innerHTML = `${hour}<span class="colonBlink">:</span>${minute}`;
       card._refs.ampm.textContent = dayPeriod;
 
-      // 24h line with seconds
-      card._refs.t24.textContent = fmtTime24WithSeconds(c.tz);
-
-      // Full weekday
+      card._refs.t24.textContent = fmtTime24NoSeconds(c.tz);
       card._refs.date.textContent = fmtDateLong(c.tz);
     }
 
     async function renderWeather(card, c){
       try{
         const wx = await fetchWeather(c.lat, c.lon);
-
         const [icon, label] = wxFromCode(wx.curCode);
         card._refs.wxIcon.textContent = icon;
 
@@ -465,16 +424,16 @@
           (curF !== null && curC !== null) ? `${curF}°F / ${curC}°C` : `--`;
 
         card._refs.wxSub.textContent =
-          ` ${label}  •  Tomorrow ${hiF ?? "--"}/${loF ?? "--"}°F (${hiC ?? "--"}/${loC ?? "--"}°C)`;
+          `${label}  •  Tomorrow ${hiF ?? "--"}/${loF ?? "--"}°F (${hiC ?? "--"}/${loC ?? "--"}°C)`;
 
-      } catch (e){
+      } catch {
         card._refs.wxIcon.textContent = "🌡️";
         card._refs.wxText.textContent = "--";
         card._refs.wxSub.textContent = "Weather unavailable";
       }
     }
 
-    // ===== Boot =====
+    // Boot
     const cards = CITIES.map(c => {
       const card = buildCard(c);
       grid.appendChild(card);
